@@ -1,0 +1,46 @@
+{
+  "name": "gemini-core",
+  "version": "0.0.0",
+  "description": "Utility which contains common modules for gemini and hermione",
+  "main": "index.js",
+  "bugs": "https://github.com/gemini-testing/gemini-core/issues",
+  "scripts": {
+    "cover": "istanbul cover _mocha test",
+    "coveralls": "npm i coveralls && npm run cover && cat ./coverage/lcov.info | coveralls",
+    "lint": "eslint .",
+    "test-unit": "mocha test",
+    "test": "npm run lint && npm run test-unit",
+    "toc": "doctoc README.md"
+  },
+  "engines": {
+    "node": ">= 4"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/gemini-testing/gemini-core.git"
+  },
+  "keywords": [
+    "gemini",
+    "hermione",
+    "core"
+  ],
+  "dependencies": {
+    "bluebird": "^3.4.6",
+    "gemini-configparser": "^0.3.0",
+    "glob-extra": "^2.0.0",
+    "istanbul": "^0.4.5",
+    "lodash": "^4.15.0",
+    "micromatch": "^2.3.11"
+  },
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "chai-as-promised": "^5.3.0",
+    "doctoc": "^1.0.0",
+    "eslint": "^3.1.1",
+    "eslint-config-gemini-testing": "^2.2.0",
+    "mocha": "^2.4.5",
+    "proxyquire": "^1.7.3",
+    "sinon": "^1.17.2"
+  }
+}
