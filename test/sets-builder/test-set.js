@@ -22,6 +22,13 @@ describe('TestSet', () => {
         assert.deepEqual(set.getBrowsers(), ['bro1', 'bro2']);
     });
 
+    it('should resolve set files using project root', () => {
+        const set = TestSet.create({files: ['some/path/file.js']});
+
+        set.resolveFiles('/project/root');
+        assert.deepEqual(set.getFiles(), ['/project/root/some/path/file.js']);
+    });
+
     describe('getBrowsersForFile', () => {
         it('should return all browsers for file', () => {
             const set = TestSet.create({
