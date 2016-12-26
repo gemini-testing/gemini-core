@@ -16,6 +16,7 @@ describe('sets-builder', () => {
     beforeEach(() => {
         sandbox.stub(SetCollection, 'create').returns(Promise.resolve());
         sandbox.stub(globExtra, 'expandPaths').returns(Promise.resolve([]));
+        sandbox.stub(TestSet.prototype, 'resolveFiles');
         sandbox.stub(fs, 'stat').yields(null, {isDirectory: () => false});
     });
 
@@ -78,6 +79,15 @@ describe('sets-builder', () => {
                 .then((result) => {
                     assert.calledWith(globExtra.expandPaths, ['project/path']);
                     assert.deepEqual(result, setCollection);
+                });
+        });
+
+        it('should resolve files by project root for each set', () => {
+            return createSetBuilder({default: {files: ['some/path']}})
+                .build('project/root')
+                .then(() => {
+                    assert.calledOnce(TestSet.prototype.resolveFiles);
+                    assert.calledWith(TestSet.prototype.resolveFiles, 'project/root');
                 });
         });
     });
