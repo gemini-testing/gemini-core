@@ -12,6 +12,9 @@ Utility which contains common modules for [gemini](https://github.com/gemini-tes
 - [SetsBuilder](#setsbuilder)
 - [Options](#options)
   - [Sets](#sets)
+- [BrowserPool](#browserpool)
+- [Errors](#errors)
+  - [CancelledError](#cancellederror)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -63,4 +66,89 @@ const options = require('gemini-core').config.options;
 ```js
 const sets = options.sets; // returns a section for configparser with two options – files and browsers.
                            // Default value is an empty set - all: {files: []}
+```
+
+### BrowserPool
+
+Example:
+```js
+const BrowserPool = require('gemini-core').BrowserPool;
+
+// Some browser realization
+class Browser {
+    constructor(id) {
+        this.id = 'bro'; // required field
+        this.sessionId = null; // required field
+    }
+
+    launch() {
+        return doLaunch()
+            .then((sessionId) => this.sessionId = sessionId);
+    }
+
+    // required method
+    reset() {
+        return doSomeReset();
+    }
+
+    quit() {
+        return doQuit();
+    }
+}
+
+const BrowserManager = {
+    create: (id) => new Browser(id),
+
+    start: (browser) => browser.launch(),
+    onStart: (browser) => emitter.emitAndWait('sessionStart', browser),
+
+    onQuit: (browser) => emitter.emitAndWait('sessionEnd', browser),
+    quit: (browser) => browser.quit()
+};
+
+const config = {
+    forBrowser: (id) => {
+        return {
+            parallelLimit: 1, // maximum number of specific browser sessions executed in parallel
+            sessionUseLimit: 2 // maxiumu number of session reuse (test per session, for example)
+        };
+    },
+
+    getBrowserIds: () => config.getBrowserIds(),
+
+    system: {
+        parallelLimit: 10 // maximum number of browser sessions at all
+    }
+};
+
+const pool = BrowserPool.create(BrowserManager, {
+    logNamespace: 'gemini', // prefix for logger. log = require('debug')(`${logNamespace}:pool:...`)
+    config
+});
+
+return pool.getBrowser('bro')
+    .then((bro) => {
+        ...
+        return pool.freeBrowser(bro);
+    });
+
+```
+
+### Errors
+
+#### CancelledError
+This error will be thrown on browser pool cancel:
+```js
+const BrowserPool = require('gemini-core').BrowserPool;
+const CancelledError = require('gemini-core').errors.CancelledError;
+...
+pool.getBrowser('bro')
+    .then((bro) => ...)
+    .catch((e) => {
+        if (e instanceof CancelledError) {
+            console.log('cancelled')
+        }
+    });
+
+pool.cancel();
 ```
