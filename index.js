@@ -6,5 +6,6 @@ module.exports = {
         options: require('./lib/config/options')
     },
     BrowserPool: require('./lib/browser-pool'),
+    BrowserAgent: require('./lib/browser-agent'),
     errors: require('./lib/errors')
 };
