@@ -13,6 +13,7 @@ Utility which contains common modules for [gemini](https://github.com/gemini-tes
 - [Options](#options)
   - [Sets](#sets)
 - [BrowserPool](#browserpool)
+- [BrowserAgent](#browseragent)
 - [Errors](#errors)
   - [CancelledError](#cancellederror)
 
@@ -132,6 +133,22 @@ return pool.getBrowser('bro')
         return pool.freeBrowser(bro);
     });
 
+```
+
+### BrowserAgent
+
+Example:
+```js
+const BrowserAgent = require('gemini-core').BrowserAgent;
+const BrowserPool = require('gemini-core').BrowserPool;
+const pool = BrowserPool.create(/*BrowserManager, config*/);
+const browserAgent = BrowserAgent.create('bro-id', pool);
+
+return browserAgent.getBrowser()
+    .then((bro) => {
+        ...
+        return browserAgent.freeBrowser(bro/*, {force: true}*/);
+    });
 ```
 
 ### Errors
