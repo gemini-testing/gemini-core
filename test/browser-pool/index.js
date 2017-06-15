@@ -35,8 +35,7 @@ describe('browser-pool', () => {
 
         pool.create(browserManager, opts);
 
-        assert.calledOnce(BasicPool.create);
-        assert.calledWith(BasicPool.create, browserManager, opts);
+        assert.calledOnceWith(BasicPool.create, browserManager, opts);
     });
 
     it('should create pool according to perBrowserLimit by default', () => {

@@ -37,10 +37,7 @@ describe('sets-builder', () => {
 
             return createSetBuilder(sets)
                 .build()
-                .then(() => {
-                    assert.calledOnce(SetCollection.create);
-                    assert.calledWith(SetCollection.create, {set1: setStub1, set2: setStub2});
-                });
+                .then(() => assert.calledOnceWith(SetCollection.create, {set1: setStub1, set2: setStub2}));
         });
 
         it('should return set collection', () => {
@@ -60,10 +57,7 @@ describe('sets-builder', () => {
 
             return createSetBuilder(sets)
                 .build('/root', globOpts)
-                .then(() => {
-                    assert.calledOnce(expandSetFiles);
-                    assert.calledWith(expandSetFiles, {formats: ['.js'], root: '/root'}, {glob: 'opts'});
-                });
+                .then(() => assert.calledOnceWith(expandSetFiles, {formats: ['.js'], root: '/root'}, {glob: 'opts'}));
         });
 
         it('should use default directory', () => {
@@ -85,10 +79,7 @@ describe('sets-builder', () => {
         it('should resolve files by project root for each set', () => {
             return createSetBuilder({default: {files: ['some/path']}})
                 .build('project/root')
-                .then(() => {
-                    assert.calledOnce(TestSet.prototype.resolveFiles);
-                    assert.calledWith(TestSet.prototype.resolveFiles, 'project/root');
-                });
+                .then(() => assert.calledOnceWith(TestSet.prototype.resolveFiles, 'project/root'));
         });
     });
 
@@ -109,10 +100,7 @@ describe('sets-builder', () => {
             return createSetBuilder(sets)
                 .useSets(['set1'])
                 .build()
-                .then(() => {
-                    assert.calledOnce(SetCollection.create);
-                    assert.calledWith(SetCollection.create, {set1: setStub});
-                });
+                .then(() => assert.calledOnceWith(SetCollection.create, {set1: setStub}));
         });
 
         it('should validate unknown sets', () => {
@@ -164,10 +152,9 @@ describe('sets-builder', () => {
             return createSetBuilder()
                 .useFiles(['some/files'])
                 .build('', globOpts)
-                .then(() => {
-                    assert.calledOnce(globExtra.expandPaths);
-                    assert.calledWith(globExtra.expandPaths, ['some/files'], sinon.match({formats: ['.js']}), globOpts);
-                });
+                .then(() => assert.calledOnceWith(
+                    globExtra.expandPaths, ['some/files'], sinon.match({formats: ['.js']}), globOpts
+                ));
         });
 
         it('should apply files to all sets if sets are specified', () => {
@@ -181,10 +168,7 @@ describe('sets-builder', () => {
             return createSetBuilder(sets)
                 .useFiles(['some/files'])
                 .build()
-                .then(() => {
-                    assert.calledOnce(TestSet.prototype.useFiles);
-                    assert.calledWith(TestSet.prototype.useFiles, ['some/files/file.js']);
-                });
+                .then(() => assert.calledOnceWith(TestSet.prototype.useFiles, ['some/files/file.js']));
         });
 
         it('should use default directory if sets are not specified and paths are not passed', () => {
@@ -215,10 +199,7 @@ describe('sets-builder', () => {
             return createSetBuilder()
                 .useBrowsers(['bro1'])
                 .build()
-                .then(() => {
-                    assert.calledOnce(TestSet.prototype.useBrowsers);
-                    assert.calledWith(TestSet.prototype.useBrowsers, ['bro1']);
-                });
+                .then(() => assert.calledOnceWith(TestSet.prototype.useBrowsers, ['bro1']));
         });
     });
 });

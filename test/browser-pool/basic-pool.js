@@ -44,10 +44,7 @@ describe('browser-pool/basic-pool', () => {
         const pool = mkPool_({browserManager});
 
         return pool.getBrowser()
-            .then(() => {
-                assert.calledOnce(browserManager.start);
-                assert.calledWith(browserManager.start, browser);
-            });
+            .then(() => assert.calledOnceWith(browserManager.start, browser));
     });
 
     it('should finalize browser if failed to create it', () => {
@@ -60,10 +57,7 @@ describe('browser-pool/basic-pool', () => {
         const pool = mkPool_({browserManager});
 
         return assert.isRejected(pool.getBrowser())
-            .then(() => {
-                assert.calledOnce(browserManager.quit);
-                assert.calledWith(browserManager.quit, browser);
-            });
+            .then(() => assert.calledOnceWith(browserManager.quit, browser));
     });
 
     describe('onStart', () => {
@@ -77,8 +71,7 @@ describe('browser-pool/basic-pool', () => {
 
             return pool.getBrowser()
                 .then(() => {
-                    assert.calledOnce(browserManager.onStart);
-                    assert.calledWith(browserManager.onStart, browser);
+                    assert.calledOnceWith(browserManager.onStart, browser);
                     assert.callOrder(browserManager.start, browserManager.onStart);
                 });
         });
@@ -116,10 +109,7 @@ describe('browser-pool/basic-pool', () => {
             const pool = mkPool_({browserManager});
 
             return assert.isRejected(pool.getBrowser())
-                .then(() => {
-                    assert.calledOnce(browserManager.quit);
-                    assert.calledWith(browserManager.quit, browser);
-                });
+                .then(() => assert.calledOnceWith(browserManager.quit, browser));
         });
     });
 
@@ -133,10 +123,7 @@ describe('browser-pool/basic-pool', () => {
 
         return pool.getBrowser()
             .then((browser) => pool.freeBrowser(browser))
-            .then(() => {
-                assert.calledOnce(browserManager.quit);
-                assert.calledWith(browserManager.quit, browser);
-            });
+            .then(() => assert.calledOnceWith(browserManager.quit, browser));
     });
 
     describe('onQuit', () => {
@@ -151,8 +138,7 @@ describe('browser-pool/basic-pool', () => {
             return pool.getBrowser()
                 .then((browser) => pool.freeBrowser(browser))
                 .then(() => {
-                    assert.calledOnce(browserManager.onQuit);
-                    assert.calledWith(browserManager.onQuit, browser);
+                    assert.calledOnceWith(browserManager.onQuit, browser);
                     assert.callOrder(browserManager.onQuit, browserManager.quit);
                 });
         });

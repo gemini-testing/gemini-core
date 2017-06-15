@@ -39,10 +39,7 @@ describe('browser-pool/caching-pool', () => {
         const pool = makePool_();
 
         return pool.getBrowser('bro')
-            .then(() => {
-                assert.calledOnce(underlyingPool.getBrowser);
-                assert.calledWith(underlyingPool.getBrowser, 'bro');
-            });
+            .then(() => assert.calledOnceWith(underlyingPool.getBrowser, 'bro'));
     });
 
     it('should return same browser as returned by underlying pool', () => {
@@ -126,10 +123,7 @@ describe('browser-pool/caching-pool', () => {
                 browser.reset.returns(Promise.reject());
 
                 return pool.getBrowser('bro')
-                    .catch(() => {
-                        assert.calledOnce(underlyingPool.freeBrowser);
-                        assert.calledWith(underlyingPool.freeBrowser, browser);
-                    });
+                    .catch(() => assert.calledOnceWith(underlyingPool.freeBrowser, browser));
             });
 
             it('should keep original error if failed to put browser back', () => {
