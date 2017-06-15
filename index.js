@@ -7,5 +7,8 @@ module.exports = {
     },
     BrowserPool: require('./lib/browser-pool'),
     BrowserAgent: require('./lib/browser-agent'),
-    errors: require('./lib/errors')
+    errors: require('./lib/errors'),
+    AsyncEmitter: require('./lib/async-emitter'),
+    PassthroughEmitter: require('./lib/passthrough-emitter'),
+    promiseUtils: require('./lib/promise-utils')
 };
