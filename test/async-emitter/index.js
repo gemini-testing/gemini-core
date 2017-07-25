@@ -23,7 +23,7 @@ describe('async-emitter', () => {
             .then(() => assert.callOrder(insideHandler1, insideHandler2, afterWait));
     });
 
-    it('should the arguments except first', () => {
+    it('should pass the arguments except first to the listener', () => {
         const listener = sinon.spy().named('listener');
 
         emitter.on('event', listener);

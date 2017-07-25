@@ -26,12 +26,12 @@ describe('PassthroughEmitter', () => {
         let onSomeEvent = sinon.spy();
         let onOtherEvent = sinon.spy();
 
-        runner.on('some-event', onSomeEvent);
-        runner.on('other-event', onOtherEvent);
-        runner.passthroughEvent(child, ['some-event', 'other-event']);
+        runner.on('event1', onSomeEvent);
+        runner.on('event2', onOtherEvent);
+        runner.passthroughEvent(child, ['event1', 'event2']);
 
-        child.emit('some-event', 'some-data');
-        child.emit('other-event', 'other-data');
+        child.emit('event1', 'some-data');
+        child.emit('event2', 'other-data');
 
         assert.calledOnceWith(onSomeEvent, 'some-data');
         assert.calledOnceWith(onOtherEvent, 'other-data');
