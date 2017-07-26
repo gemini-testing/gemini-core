@@ -22,11 +22,21 @@ describe('TestSet', () => {
         assert.deepEqual(set.getBrowsers(), ['bro1', 'bro2']);
     });
 
-    it('should resolve set files using project root', () => {
-        const set = TestSet.create({files: ['some/path/file.js']});
+    describe('resolveFiles', () => {
+        it('should resolve set files using project root', () => {
+            const set = TestSet.create({files: ['some/path/file.js']});
 
-        set.resolveFiles('/project/root');
-        assert.deepEqual(set.getFiles(), ['/project/root/some/path/file.js']);
+            set.resolveFiles('/project/root');
+            assert.deepEqual(set.getFiles(), ['/project/root/some/path/file.js']);
+        });
+
+        it('should not mutate constructor arguments', () => {
+            const input = {files: ['some/path/file.js']};
+            const set = TestSet.create(input);
+
+            set.resolveFiles('/project/root');
+            assert.deepEqual(input, {files: ['some/path/file.js']});
+        });
     });
 
     describe('getBrowsersForFile', () => {
@@ -75,10 +85,8 @@ describe('TestSet', () => {
 
     describe('useFiles', () => {
         it('should return intersection of set files and passed files', () =>{
-            const set = TestSet.create({
-                files: ['some/path/file.js'],
-                browsers: ['bro1', 'bro2']
-            });
+            const set = TestSet.create({files: ['some/path/file.js']});
+
             set.useFiles(['some/path/file.js', 'some/path/file2.js']);
 
             assert.deepEqual(set.getFiles(), ['some/path/file.js']);
@@ -112,6 +120,15 @@ describe('TestSet', () => {
 
             assert.deepEqual(set.getFiles(), ['some/path/file.js']);
         });
+
+        it('should not mutate constructor arguments', () => {
+            const input = {files: ['some/*/*.js']};
+            const set = TestSet.create(input);
+
+            set.useFiles(['some/path/file.js', 'another/path/file2.js']);
+
+            assert.deepEqual(input, {files: ['some/*/*.js']});
+        });
     });
 
     describe('useBrowsers', () => {
@@ -130,6 +147,15 @@ describe('TestSet', () => {
 
             assert.deepEqual(set.getBrowsers(), ['bro2']);
         });
+
+        it('should not mutate constructor arguments', () => {
+            const input = {browsers: ['bro1', 'bro2']};
+            const set = TestSet.create(input);
+
+            set.useBrowsers(['bro2', 'bro3']);
+
+            assert.deepEqual(input, {browsers: ['bro1', 'bro2']});
+        });
     });
 
     describe('transformDirsToMasks', () => {
@@ -141,6 +167,15 @@ describe('TestSet', () => {
 
             return set.transformDirsToMasks()
                 .then(() => assert.deepEqual(set.getFiles(), ['some/path/**']));
+        });
+
+        it('should not mutate constructor arguments', () => {
+            fs.stat.yields(null, {isDirectory: () => true});
+            const input = {files: ['some/path']};
+            const set = TestSet.create(input);
+
+            return set.transformDirsToMasks()
+                .then(() => assert.deepEqual(input, {files: ['some/path']}));
         });
 
         it('should not transform set paths to masks if paths are already masks', () => {
