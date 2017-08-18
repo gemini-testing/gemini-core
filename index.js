@@ -1,5 +1,7 @@
 'use strict';
 
+console.log('HELLO FROM GEMINI-CORE');
+
 module.exports = {
     SetsBuilder: require('./lib/sets-builder'),
     config: {
