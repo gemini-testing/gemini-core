@@ -5,15 +5,13 @@
   "main": "index.js",
   "bugs": "https://github.com/gemini-testing/gemini-core/issues",
   "scripts": {
-    "cover": "istanbul cover _mocha test",
-    "coveralls": "npm i coveralls && npm run cover && cat ./coverage/lcov.info | coveralls",
     "lint": "eslint .",
     "test-unit": "mocha test",
     "test": "npm run lint && npm run test-unit",
     "toc": "doctoc README.md"
   },
   "engines": {
-    "node": ">= 4"
+    "node": ">= 6"
   },
   "license": "MIT",
   "repository": {
@@ -38,7 +36,6 @@
     "chai": "^3.4.1",
     "chai-as-promised": "^5.3.0",
     "doctoc": "^1.0.0",
-    "istanbul": "^0.4.5",
     "eslint": "^3.1.1",
     "eslint-config-gemini-testing": "^2.2.0",
     "mocha": "^2.4.5",
