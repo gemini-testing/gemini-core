@@ -1,7 +1,6 @@
 # gemini-core
 
 [![Build Status](https://travis-ci.org/gemini-testing/gemini-core.svg?branch=master)](https://travis-ci.org/gemini-testing/gemini-core)
-[![Coverage Status](https://coveralls.io/repos/github/gemini-testing/gemini-core/badge.svg?branch=master)](https://coveralls.io/github/gemini-testing/gemini-core?branch=master)
 
 Utility which contains common modules for [gemini](https://github.com/gemini-testing/gemini) and [hermione](https://github.com/gemini-testing/hermione).
 
