@@ -14,10 +14,10 @@ describe('promise-utils', () => {
             const second = Promise.delay(2);
 
             return utils.waitForResults([first, second])
-                .then(() => {
-                    assert.isFulfilled(first);
-                    assert.isFulfilled(second);
-                });
+                .then(() => Promise.all([
+                    assert.isFulfilled(first),
+                    assert.isFulfilled(second)
+                ]));
         });
 
         it('should reject with first error if any of passed promises rejected', () => {
