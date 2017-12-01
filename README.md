@@ -149,7 +149,7 @@ Node.js builtin `EventEmmiter` class executes all handlers synchronously without
 `AsyncEmitter` is the subclass of `EventEmmiter` which adds ability to return a promise from event handler and wait until it resolved. Just use `emitAndWait` instead of `emit`:
 
 ```js
-const AsyncEmitter = require('gemini-core').AsyncEmitter;
+const AsyncEmitter = require('gemini-core').events.AsyncEmitter;
 const emitter = new AsyncEmitter();
 emitter.on('event', function() {
     return Promise.delay(1000);
