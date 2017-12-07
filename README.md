@@ -19,6 +19,24 @@ Utility which contains common modules for [gemini](https://github.com/gemini-tes
 - [BrowserAgent](#browseragent)
 - [Errors](#errors)
   - [CancelledError](#cancellederror)
+- [Image](#image)
+  - [Methods](#methods)
+    - [crop](#crop)
+    - [getSize](#getsize)
+    - [getRGBA](#getrgba)
+    - [save](#save)
+    - [clear](#clear)
+    - [join](#join)
+  - [Static methods](#static-methods)
+    - [fromBase64](#frombase64)
+    - [RGBToString](#rgbtostring)
+    - [compare](#compare)
+    - [buildDiff](#builddiff)
+- [Temp](#temp)
+  - [init](#init)
+  - [path](#path)
+  - [serialize](#serialize)
+  - [attach](#attach)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -209,3 +227,149 @@ pool.getBrowser('bro')
 
 pool.cancel();
 ```
+
+### Image
+
+API for working with images.
+
+```js
+const {Image} = require('gemini-core');
+const imgBuffer = new Buffer('someBufferString', 'base64');
+const image = new Image(imgBuffer);
+
+const imageSize = image.getSize();
+```
+
+#### Methods
+
+##### crop
+Crop image to the passed sizes depending on scale factor. Modifies current image.
+Returns Promise with image instance.
+
+```js
+const image = new Image(imgBuffer);
+const cropArea = {
+    top: 10,
+    left: 10,
+    width: 100,
+    height: 100
+};
+
+image.crop(cropArea, 2); // will crop double sized image i.e width=200, heigth=200 etc.
+```
+
+##### getSize
+
+Returns object with current image size e.g. `{width: 100, height: 100}`
+
+##### getRGBA
+
+Returns RGBA color of the passed image pixel in row.
+Takes pixel number in row as first argument and row nomber as second.
+Returns object with color.
+
+```js
+const image = new Image(imgBuffer);
+
+const color = image.getRGBA(1, 2); // {r: 255, g: 0, b: 0, a:255}
+```
+
+##### save
+
+Save image to the passed path. Asynchronous operation.
+Returns Promise with current image instance.
+
+##### clear
+
+Fill image area with black color depending on scale factor.
+
+```js
+const image = new Image(imgBuffer);
+const clearArea = {
+    top: 10,
+    left: 10,
+    width: 100,
+    height: 100
+};
+
+image.clear(clearArea, {scaleFactor: 1});
+```
+
+##### join
+
+Append another image to current. Modifies current image.
+
+```js
+const image1 = new Image(imgBuffer);
+const image2 = new Image(imgBuffer);
+
+image1.join(image2);
+```
+
+#### Static methods
+
+##### fromBase64
+
+Returns new Image instance from base64 hash.
+
+##### RGBToString
+
+Convert object-like RGB color to string.
+
+```js
+const color = Image.RGBToString({r: 255, g: 0, b: 0}); // returns #ff0000
+```
+
+##### compare
+
+Compare images with passed options. Asynchronous operation.
+Returns compare result sa Boolean value.
+
+```js
+const opts = {
+    canHaveCaret: true,
+    pixelRatio: 1,
+    tolerance: 2
+};
+
+return Image.compare(path1, path2, opts)
+    .then((isEqual) => {
+        console.log(isEqual);
+    });
+```
+
+##### buildDiff
+
+Save new diff image with passed options on the file system.
+
+```js
+const diffOpts = {
+    reference: '/ref/path/image.png',
+    current: '/curr/path/image.png',
+    diff: '/diff/path/image.png',
+    diffColor: '#f5f5f5',
+    tolerance: 2
+};
+
+return Image.buildDiff(diffOpts); // will save image with diff to /diff/path/image.png
+```
+
+### Temp
+
+Class for creating temp direcroty for image save. Directory will be removed on process end.
+
+#### init
+
+Init temp directory.
+
+#### path
+
+Generate random path relative temp directory.
+
+#### serialize
+
+Serialize Temp instance.
+
+#### attach
+
+Attach passed directory to the current Temp instance.
