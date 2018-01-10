@@ -5,7 +5,7 @@ const _ = require('lodash');
 
 const MissingOptionError = require('gemini-configparser').MissingOptionError;
 
-const configOptions = require('../../lib/config/options');
+const configOptions = require('lib/config/options');
 
 const section = configparser.section;
 const option = configparser.option;

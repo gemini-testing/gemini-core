@@ -6,6 +6,8 @@
   "bugs": "https://github.com/gemini-testing/gemini-core/issues",
   "scripts": {
     "lint": "eslint .",
+    "prepublish": "npm run prepare-calibrate-script",
+    "prepare-calibrate-script": "uglifyjs ./lib/browser/client-scripts/calibrate.js -m > ./lib/browser/client-scripts/calibrate.min.js --support-ie8",
     "test-unit": "mocha test",
     "test": "npm run lint && npm run test-unit",
     "toc": "doctoc README.md"
@@ -43,6 +45,7 @@
     "eslint-config-gemini-testing": "^2.2.0",
     "mocha": "^2.4.5",
     "proxyquire": "^1.7.3",
-    "sinon": "^2.2.0"
+    "sinon": "^2.2.0",
+    "uglify-js": "^3.3.5"
   }
 }

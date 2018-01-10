@@ -5,6 +5,7 @@ module.exports = {
     config: {
         options: require('./lib/config/options')
     },
+    Calibrator: require('./lib/calibrator'),
     BrowserPool: require('./lib/browser-pool'),
     BrowserAgent: require('./lib/browser-agent'),
     Image: require('./lib/image'),
