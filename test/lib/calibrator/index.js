@@ -14,7 +14,7 @@ describe('calibrator', () => {
         return {
             open: () => {},
             evalScript: () => {},
-            captureViewPortImage: () => {}
+            captureViewportImage: () => {}
         };
     };
 
@@ -22,7 +22,7 @@ describe('calibrator', () => {
         const imgPath = path.join(__dirname, '..', '..', 'fixtures', imageName);
         const imgData = fs.readFileSync(imgPath);
 
-        browser.captureViewPortImage.returns(Promise.resolve(new Image(imgData)));
+        browser.captureViewportImage.returns(Promise.resolve(new Image(imgData)));
     };
 
     beforeEach(() => {
@@ -69,7 +69,7 @@ describe('calibrator', () => {
             .then(() => {
                 assert.calledOnce(browser.open);
                 assert.calledOnce(browser.evalScript);
-                assert.calledOnce(browser.captureViewPortImage);
+                assert.calledOnce(browser.captureViewportImage);
             });
     });
 
