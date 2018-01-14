@@ -54,6 +54,13 @@ describe('Image', () => {
                 .then(() => assert.calledWith(SafeRect.create, scaledRect));
         });
 
+        it('should use default scale factor (one) if the passed value is not positive', () => {
+            const rect = {left: 1, top: 2, width: 3, height: 4};
+
+            return image.crop(rect, {scaleFactor: null})
+                .then(() => assert.calledWith(SafeRect.create, rect));
+        });
+
         it('should crop an image', () => {
             SafeRect.create.returns({left: 1, top: 2, width: 3, height: 4});
 
