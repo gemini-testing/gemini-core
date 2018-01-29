@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = {
+    BaseStats: require('./lib/base-stats'),
     SetsBuilder: require('./lib/sets-builder'),
     config: {
         options: require('./lib/config/options')
