@@ -13,5 +13,10 @@ module.exports = {
     temp: require('./lib/temp'),
     errors: require('./lib/errors'),
     events: require('./lib/events'),
-    promiseUtils: require('./lib/promise-utils')
+    promiseUtils: require('./lib/promise-utils'),
+    clientBridge: require('./lib/client-bridge'),
+    CoordValidator: require('./lib/coord-validator'),
+    coverage: {
+        coverageLevel: require('./lib/coverage/coverage-level')
+    }
 };
