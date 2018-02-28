@@ -38,7 +38,6 @@ Utility which contains common modules for [gemini](https://github.com/gemini-tes
   - [serialize](#serialize)
   - [attach](#attach)
 - [clientBdridge](#clientbdridge)
-- [CoordValidator](#coordvalidator)
 - [coverageLevel](#coveragelevel)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -383,14 +382,6 @@ Attach passed directory to the current Temp instance.
 const {clientBridge} = require('gemini-core');
 
 return clientBridge.build(browser, {calibration, coverage});
-```
-
-### CoordValidator
-
-```js
-const {CoordValidator} = require('gemini-core');
-
-CoordValidator.create(browser).validate(viewport, cropArea);
 ```
 
 ### coverageLevel

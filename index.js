@@ -15,8 +15,11 @@ module.exports = {
     events: require('./lib/events'),
     promiseUtils: require('./lib/promise-utils'),
     clientBridge: require('./lib/client-bridge'),
-    CoordValidator: require('./lib/coord-validator'),
     coverage: {
         coverageLevel: require('./lib/coverage/coverage-level')
+    },
+    Viewport: require('./lib/viewport'),
+    browser: {
+        Camera: require('./lib/browser/camera')
     }
 };
