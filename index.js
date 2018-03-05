@@ -21,5 +21,6 @@ module.exports = {
     Viewport: require('./lib/viewport'),
     browser: {
         Camera: require('./lib/browser/camera')
-    }
+    },
+    CoordValidator: require('./lib/viewport/coord-validator')
 };
