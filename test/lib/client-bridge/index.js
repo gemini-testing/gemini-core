@@ -61,24 +61,48 @@ describe('clientBridge', () => {
         it('should transform client scripts using native library', () => {
             return clientBridge.build(null, {calibration: {needsCompatLib: false}})
                 .then(() => {
-                    assert.calledWith(script.transform, {
+                    assert.calledWith(script.transform, sinon.match({
                         aliases: {
                             './lib': {relative: './lib.native.js'}
                         },
                         verbose: false
-                    });
+                    }));
                 });
         });
 
         it('should transform client scripts using compat library', () => {
             return clientBridge.build(null, {calibration: {needsCompatLib: true}})
                 .then(() => {
-                    assert.calledWith(script.transform, {
+                    assert.calledWith(script.transform, sinon.match({
                         aliases: {
                             './lib': {relative: './lib.compat.js'}
                         },
                         verbose: false
-                    });
+                    }));
+                });
+        });
+
+        it('should transform client scripts NOT for deprecated mode', () => {
+            return clientBridge.build(null, {supportDeprecated: false})
+                .then(() => {
+                    assert.calledWith(script.transform, sinon.match({
+                        aliases: {
+                            './ignore-areas': {relative: './ignore-areas.js'}
+                        },
+                        verbose: false
+                    }));
+                });
+        });
+
+        it('should transform client scripts for deprecated mode', () => {
+            return clientBridge.build(null, {supportDeprecated: true})
+                .then(() => {
+                    assert.calledWith(script.transform, sinon.match({
+                        aliases: {
+                            './ignore-areas': {relative: './ignore-areas.deprecated.js'}
+                        },
+                        verbose: false
+                    }));
                 });
         });
 

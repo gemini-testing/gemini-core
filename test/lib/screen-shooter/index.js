@@ -10,6 +10,7 @@ describe('screen-shooter', () => {
     beforeEach(() => {
         sandbox.spy(Viewport, 'create');
         sandbox.stub(Viewport.prototype, 'crop');
+        sandbox.stub(Viewport.prototype, 'ignoreAreas');
         sandbox.spy(Viewport.prototype, 'extendBy');
     });
 
@@ -44,6 +45,11 @@ describe('screen-shooter', () => {
         it('should crop image of passed size', () => {
             return capture({captureArea: {foo: 'bar'}})
                 .then(() => assert.calledOnceWith(Viewport.prototype.crop, {foo: 'bar'}));
+        });
+
+        it('should clear configured ignore areas', () => {
+            return capture({ignoreAreas: {foo: 'bar'}})
+                .then(() => assert.calledWith(Viewport.prototype.ignoreAreas, {foo: 'bar'}));
         });
 
         it('should return croped image', () => {
@@ -135,6 +141,17 @@ describe('screen-shooter', () => {
 
                         return capture(page)
                             .then(() => assert.calledOnceWith(Viewport.prototype.crop, page.captureArea));
+                    });
+
+                    it('should clear configured ignore areas', () => {
+                        return capture({ignoreAreas: {foo: 'bar'}})
+                            .then(() => assert.calledWith(Viewport.prototype.ignoreAreas, {foo: 'bar'}));
+                    });
+
+                    it('should return cropped image', () => {
+                        Viewport.prototype.crop.resolves('foo bar');
+
+                        return assert.becomes(capture(), 'foo bar');
                     });
                 });
             });
