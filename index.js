@@ -18,9 +18,10 @@ module.exports = {
     coverage: {
         coverageLevel: require('./lib/coverage/coverage-level')
     },
-    Viewport: require('./lib/viewport'),
     browser: {
         Camera: require('./lib/browser/camera')
     },
-    CoordValidator: require('./lib/viewport/coord-validator')
+    ScreenShooter: require('./lib/screen-shooter'),
+    Viewport: require('./lib/screen-shooter/viewport'),
+    CoordValidator: require('./lib/screen-shooter/viewport/coord-validator')
 };
