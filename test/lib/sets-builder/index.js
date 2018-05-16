@@ -90,6 +90,40 @@ describe('sets-builder', () => {
                     assert.calledWith(TestSet.prototype.resolveFiles, 'project/root');
                 });
         });
+
+        describe('should resolve glob ignore patterns by project root if pattern set as', () => {
+            beforeEach(() => sandbox.stub(TestSet.prototype, 'expandFiles'));
+
+            it('string', () => {
+                const globOpts = {ignore: 'exclude/files'};
+
+                return createSetBuilder()
+                    .build('/root', globOpts)
+                    .then(() => {
+                        assert.calledOnce(TestSet.prototype.expandFiles);
+                        assert.calledWith(
+                            TestSet.prototype.expandFiles,
+                            sinon.match.any,
+                            {ignore: ['/root/exclude/files']}
+                        );
+                    });
+            });
+
+            it('array of strings', () => {
+                const globOpts = {ignore: ['exclude/files', 'exclude/*.js']};
+
+                return createSetBuilder()
+                    .build('/root', globOpts)
+                    .then(() => {
+                        assert.calledOnce(TestSet.prototype.expandFiles);
+                        assert.calledWith(
+                            TestSet.prototype.expandFiles,
+                            sinon.match.any,
+                            {ignore: ['/root/exclude/files', '/root/exclude/*.js']}
+                        );
+                    });
+            });
+        });
     });
 
     describe('useSets', () => {
