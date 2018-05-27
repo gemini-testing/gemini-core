@@ -164,9 +164,9 @@ return pool.getBrowser('bro')
 
 Node.js event emitter with promises support.
 
-Node.js builtin `EventEmmiter` class executes all handlers synchronously without waiting for completion of any async operations that may happen inside.
+Node.js builtin `EventEmitter` class executes all handlers synchronously without waiting for completion of any async operations that may happen inside.
 
-`AsyncEmitter` is the subclass of `EventEmmiter` which adds ability to return a promise from event handler and wait until it resolved. Just use `emitAndWait` instead of `emit`:
+`AsyncEmitter` is the subclass of `EventEmitter` which adds ability to return a promise from event handler and wait until it resolved. Just use `emitAndWait` instead of `emit`:
 
 ```js
 const AsyncEmitter = require('gemini-core').events.AsyncEmitter;
@@ -175,7 +175,7 @@ emitter.on('event', function() {
     return Promise.delay(1000);
 });
 
-emmiter.emitAndWait('event')
+emitter.emitAndWait('event')
     .then(function() {
         console.log('All handlers finished'); // Would be called after 1 second
     });
