@@ -150,7 +150,7 @@ const pool = BrowserPool.create(BrowserManager, {
     config
 });
 
-return pool.getBrowser('bro')
+return pool.getBrowser('bro'/*, {highPriority: true}*/)
     .then((bro) => {
         ...
         return pool.freeBrowser(bro);
@@ -204,7 +204,7 @@ const BrowserPool = require('gemini-core').BrowserPool;
 const pool = BrowserPool.create(/*BrowserManager, config*/);
 const browserAgent = BrowserAgent.create('bro-id', pool);
 
-return browserAgent.getBrowser()
+return browserAgent.getBrowser(/*{highPriority: true}*/)
     .then((bro) => {
         ...
         return browserAgent.freeBrowser(bro/*, {force: true}*/);

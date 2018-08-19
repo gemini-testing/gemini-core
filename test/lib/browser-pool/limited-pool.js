@@ -13,7 +13,7 @@ describe('browser-pool/limited-pool', () => {
 
     beforeEach(() => {
         underlyingPool = {
-            getBrowser: sinon.stub().callsFake((id) => stubBrowser(id)),
+            getBrowser: sinon.stub().callsFake((id) => Promise.resolve(stubBrowser(id))),
             freeBrowser: sinon.stub().returns(Promise.resolve()),
             cancel: sinon.stub()
         };
@@ -21,13 +21,24 @@ describe('browser-pool/limited-pool', () => {
 
     afterEach(() => sandbox.restore());
 
-    it('should request browser from underlying pool', () => {
-        const browser = stubBrowser('bro');
-        underlyingPool.getBrowser.returns(Promise.resolve(browser));
+    describe('getBrowser', () => {
+        it('should request browser from underlying pool', async () => {
+            const browser = stubBrowser('bro');
+            underlyingPool.getBrowser.returns(Promise.resolve(browser));
 
-        return makePool_()
-            .getBrowser('bro')
-            .then((bro) => assert.equal(bro, browser));
+            const bro = await makePool_().getBrowser('bro');
+
+            assert.equal(bro, browser);
+        });
+
+        it('should pass opts to underlying pool', async () => {
+            const browser = stubBrowser('bro');
+            underlyingPool.getBrowser.returns(Promise.resolve(browser));
+
+            await makePool_().getBrowser('bro', {some: 'opt'});
+
+            assert.calledOnceWith(underlyingPool.getBrowser, 'bro', {some: 'opt'});
+        });
     });
 
     describe('should return browser to underlying pool', () => {
@@ -134,7 +145,7 @@ describe('browser-pool/limited-pool', () => {
             return assert.isRejected(result, /timeout$/);
         });
 
-        it('should launch next browsers after previous are released', () => {
+        it('should launch next browser after previous is released', () => {
             const expectedBrowser = stubBrowser();
             const pool = makePool_(1);
 
@@ -149,7 +160,7 @@ describe('browser-pool/limited-pool', () => {
             return assert.eventually.equal(result, expectedBrowser);
         });
 
-        it('should launch queued browser when previous are released', () => {
+        it('should launch queued browser when previous is released', () => {
             const expectedBrowser = stubBrowser();
             const pool = makePool_(1);
 
@@ -166,6 +177,27 @@ describe('browser-pool/limited-pool', () => {
                 });
 
             return assert.eventually.equal(result, expectedBrowser);
+        });
+
+        it('should perform high priority request first', async () => {
+            const firstBrowserRequest = underlyingPool.getBrowser.withArgs('first').named('firstRequest');
+            const secondBrowserRequest = underlyingPool.getBrowser.withArgs('second').named('secondRequest');
+            const thirdBrowserRequest = underlyingPool.getBrowser.withArgs('third').named('thirdRequest');
+
+            const pool = makePool_(1);
+            const free_ = (bro) => pool.freeBrowser(bro);
+
+            await Promise.all([
+                pool.getBrowser('first').then(free_),
+                pool.getBrowser('second').then(free_),
+                pool.getBrowser('third', {highPriority: true}).then(free_)
+            ]);
+
+            assert.callOrder(
+                firstBrowserRequest,
+                thirdBrowserRequest,
+                secondBrowserRequest
+            );
         });
 
         it('should launch next browsers if free failed', () => {
@@ -215,8 +247,7 @@ describe('browser-pool/limited-pool', () => {
             const pool = makePool_(1);
             const error = new Error('You shall not pass');
             underlyingPool.getBrowser
-                .onFirstCall().returns(Promise.resolve(stubBrowser()))
-                .onSecondCall().returns(Promise.reject(error));
+                .onSecondCall().callsFake(() => Promise.reject(error));
 
             return pool.getBrowser('bro')
                 .then((browser) => {
@@ -228,18 +259,20 @@ describe('browser-pool/limited-pool', () => {
     });
 
     describe('cancel', () => {
-        it('should cancel queued browsers', () => {
+        it('should cancel queued browsers', async () => {
             const pool = makePool_(1);
-            underlyingPool.getBrowser.returns(Promise.resolve(stubBrowser()));
 
-            return pool.getBrowser('bro')
-                .then(() => {
-                    const secondRequest = pool.getBrowser('bro');
+            const firstRequest = pool.getBrowser('bro').then((bro) => {
+                pool.cancel();
+                return pool.freeBrowser(bro);
+            });
+            const secondRequest = pool.getBrowser('bro');
+            const thirdRequest = pool.getBrowser('bro', {highPriority: true});
 
-                    pool.cancel();
+            await Promise.all([firstRequest, secondRequest, thirdRequest]).catch(() => {});
 
-                    return assert.isRejected(secondRequest, CancelledError);
-                });
+            await assert.isRejected(secondRequest, CancelledError);
+            await assert.isRejected(thirdRequest, CancelledError);
         });
 
         it('should cancel an underlying pool', () => {
@@ -250,27 +283,23 @@ describe('browser-pool/limited-pool', () => {
             assert.calledOnce(underlyingPool.cancel);
         });
 
-        it('should reset request queue', () => {
-            const firstBrowser = stubBrowser();
+        it('should reset request queue', async () => {
             const pool = makePool_(1);
+            const free_ = (bro) => pool.freeBrowser(bro);
 
-            underlyingPool.getBrowser
-                .withArgs('first').returns(Promise.resolve(firstBrowser));
-
-            const result = pool.getBrowser('first')
-                .then((browser) => {
-                    const secondBrowserPromise = pool.getBrowser('second');
-
+            await Promise.all([
+                pool.getBrowser('first').then((bro) => {
                     pool.cancel();
+                    return free_(bro);
+                }),
+                pool.getBrowser('second').then(free_),
+                pool.getBrowser('third', {highPriority: true}).then(free_)
+            ])
+            .catch(() => {});
 
-                    return pool.freeBrowser(browser).thenReturn(secondBrowserPromise);
-                });
-
-            return result
-                .catch(() => {
-                    assert.calledOnce(underlyingPool.getBrowser);
-                    assert.neverCalledWith(underlyingPool.getBrowser, 'second');
-                });
+            assert.calledOnce(underlyingPool.getBrowser);
+            assert.neverCalledWith(underlyingPool.getBrowser, 'second');
+            assert.neverCalledWith(underlyingPool.getBrowser, 'third');
         });
     });
 });
