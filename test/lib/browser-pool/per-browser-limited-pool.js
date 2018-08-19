@@ -63,6 +63,20 @@ describe('browser-pool/per-browser-limited-pool', () => {
             assert.called(bro1Pool.getBrowser);
             assert.notCalled(bro2Pool.getBrowser);
         });
+
+        it('should pass opts to pool', () => {
+            const pool = sinon.createStubInstance(BasicPool);
+            LimitedPool.create.returns(pool);
+
+            const config = mkConfigStub_({
+                bro: {parallelLimit: 1}
+            });
+            const perBrowserLimitedPool = makePool_({config});
+
+            perBrowserLimitedPool.getBrowser('bro', {some: 'opt'});
+
+            assert.calledOnceWith(pool.getBrowser, 'bro', {some: 'opt'});
+        });
     });
 
     describe('freeBrowser', () => {

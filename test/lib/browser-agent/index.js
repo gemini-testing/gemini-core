@@ -26,6 +26,14 @@ describe('browser-agent', () => {
         return assert.becomes(browserAgent.getBrowser(), {foo: 'bar'});
     });
 
+    it('should request browser with passed options', async () => {
+        const browserAgent = BrowserAgent.create(null, browserPool);
+
+        await browserAgent.getBrowser({some: 'opt'});
+
+        assert.calledOnceWith(browserPool.getBrowser, sinon.match.any, {some: 'opt'});
+    });
+
     it('should rerequest browser if got same session', () => {
         const someBro = {sessionId: 'some-id'};
         const otherBro = {sessionId: 'other-id'};
