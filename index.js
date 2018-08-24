@@ -23,5 +23,6 @@ module.exports = {
     },
     ScreenShooter: require('./lib/screen-shooter'),
     Viewport: require('./lib/screen-shooter/viewport'),
-    CoordValidator: require('./lib/screen-shooter/viewport/coord-validator')
+    CoordValidator: require('./lib/screen-shooter/viewport/coord-validator'),
+    keys: require('./lib/keys')
 };

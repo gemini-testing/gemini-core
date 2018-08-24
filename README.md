@@ -39,6 +39,7 @@ Utility which contains common modules for [gemini](https://github.com/gemini-tes
   - [attach](#attach)
 - [clientBdridge](#clientbdridge)
 - [coverageLevel](#coveragelevel)
+- [keys](#keys)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -390,4 +391,10 @@ return clientBridge.build(browser, {calibration, coverage});
 const {coverage: {coverageLevel}} = require('gemini-core');
 
 coverageLevel.merge(oldValue, newValue);
+```
+
+### keys
+
+```js
+const {keys} = require('gemini-core'); // codes of base keys
 ```
