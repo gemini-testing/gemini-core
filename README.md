@@ -331,7 +331,8 @@ Returns compare result sa Boolean value.
 const opts = {
     canHaveCaret: true,
     pixelRatio: 1,
-    tolerance: 2
+    tolerance: 2,
+    antialiasingTolerance: 3
 };
 
 return Image.compare(path1, path2, opts)

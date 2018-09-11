@@ -141,15 +141,17 @@ describe('Image', () => {
 
         return Image.compare('some/path', 'other/path', {
             canHaveCaret: true,
+            pixelRatio: 11,
             tolerance: 250,
-            pixelRatio: 11
+            antialiasingTolerance: 100500
         })
             .then(() => {
                 assert.calledOnce(looksSameStub);
                 assert.calledWith(looksSameStub, 'some/path', 'other/path', {
                     ignoreCaret: true,
+                    pixelRatio: 11,
                     tolerance: 250,
-                    pixelRatio: 11
+                    antialiasingTolerance: 100500
                 });
             });
     });
