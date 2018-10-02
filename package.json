@@ -32,7 +32,7 @@
     "collections": "5.1.5",
     "debug": "^2.2.0",
     "gemini-configparser": "^1.0.0",
-    "glob-extra": "^3.0.0",
+    "glob-extra": "^4.0.0",
     "lodash": "^4.15.0",
     "looks-same": "^4.0.0",
     "micromatch": "^2.3.11",
