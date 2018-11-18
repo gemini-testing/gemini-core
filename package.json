@@ -34,7 +34,7 @@
     "gemini-configparser": "^1.0.0",
     "glob-extra": "^4.0.0",
     "lodash": "^4.15.0",
-    "looks-same": "^4.0.0",
+    "looks-same": "gemini-testing/looks-same#test-clustering",
     "micromatch": "^2.3.11",
     "png-img": "^2.1.1",
     "sizzle": "^2.3.3",
