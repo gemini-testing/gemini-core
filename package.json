@@ -29,7 +29,6 @@
     "aliasify": "^1.9.0",
     "bluebird": "^3.4.6",
     "browserify": "^13.3.0",
-    "collections": "5.1.5",
     "debug": "^2.2.0",
     "gemini-configparser": "^1.0.0",
     "glob-extra": "^4.0.0",
