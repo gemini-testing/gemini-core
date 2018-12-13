@@ -22,7 +22,7 @@ describe('Image', () => {
                             BVBhXY2BgYAAAAAQAAVzN/2kAAAAASUVORK5CYII=`;
         const imgBuffer = new Buffer(bufferString, 'base64');
 
-        image = new Image(imgBuffer);
+        image = Image.create(imgBuffer);
 
         sandbox.stub(PngImg.prototype, 'size').returns({width: 100500, height: 500100});
     });
