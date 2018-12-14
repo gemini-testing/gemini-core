@@ -29,7 +29,6 @@
     "aliasify": "^1.9.0",
     "bluebird": "^3.4.6",
     "browserify": "^13.3.0",
-    "collections": "5.1.5",
     "debug": "^2.2.0",
     "gemini-configparser": "^1.0.0",
     "glob-extra": "^4.0.0",
@@ -40,7 +39,8 @@
     "sizzle": "^2.3.3",
     "temp": "^0.8.3",
     "uglify-js": "^2.8.29",
-    "uglifyify": "^3.0.4"
+    "uglifyify": "^3.0.4",
+    "yallist": "^3.0.3"
   },
   "devDependencies": {
     "app-module-path": "^1.1.0",
