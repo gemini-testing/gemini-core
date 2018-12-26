@@ -143,7 +143,8 @@ describe('Image', () => {
             canHaveCaret: true,
             pixelRatio: 11,
             tolerance: 250,
-            antialiasingTolerance: 100500
+            antialiasingTolerance: 100500,
+            compareOpts: {stopOnFirstFail: true}
         })
             .then(() => {
                 assert.calledOnce(looksSameStub);
@@ -151,7 +152,8 @@ describe('Image', () => {
                     ignoreCaret: true,
                     pixelRatio: 11,
                     tolerance: 250,
-                    antialiasingTolerance: 100500
+                    antialiasingTolerance: 100500,
+                    stopOnFirstFail: true
                 });
             });
     });
