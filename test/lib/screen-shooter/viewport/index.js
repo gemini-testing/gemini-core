@@ -10,14 +10,21 @@ const CoordValidator = require('lib/screen-shooter/viewport/coord-validator');
 describe('Viewport', () => {
     const sandbox = sinon.sandbox.create();
 
-    const createViewport = (opts) => new Viewport(opts.coords || {top: 0, left: 0}, opts.image, opts.pixelRatio);
+    const createViewport = (opts) => new Viewport(
+        opts.coords || {top: 0, left: 0},
+        opts.image,
+        opts.pixelRatio,
+        opts.allowViewportOverflow
+    );
 
     afterEach(() => sandbox.restore());
 
     describe('validate', () => {
         const validate = (opts) => {
             opts = _.defaults(opts || {}, {
-                viewport: {},
+                viewport: {
+                    allowViewportOverflow: opts.allowViewportOverflow
+                },
                 captureArea: {},
                 browser: 'default-bro'
             });
@@ -36,6 +43,12 @@ describe('Viewport', () => {
             validate({browser: 'some-browser'});
 
             assert.calledWith(CoordValidator.create, 'some-browser');
+        });
+
+        it('should create coordinates validator with passed allowViewportOverflow option', () => {
+            validate({browser: 'some-browser', allowViewportOverflow: true});
+
+            assert.calledWith(CoordValidator.create, 'some-browser', {allowViewportOverflow: true});
         });
 
         it('should validate passed capture area', () => {

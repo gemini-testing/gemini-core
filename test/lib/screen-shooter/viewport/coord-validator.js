@@ -54,6 +54,12 @@ describe('CoordValidator', () => {
         });
     });
 
+    it('should not throw OffsetViewportError if option allowViewportOverflow is set', () => {
+        coordValidator = new CoordValidator({id: 'some-browser-id'}, {allowViewportOverflow: true});
+
+        assert.doesNotThrow(() => validate_({left: -1}));
+    });
+
     it('should not throw on passed validation', () => {
         const fn = () => validate_({left: 0});
 
