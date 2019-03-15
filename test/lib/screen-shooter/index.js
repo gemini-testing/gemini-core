@@ -42,6 +42,20 @@ describe('screen-shooter', () => {
                 .then(() => assert.calledOnceWith(Viewport.create, 'foo', {baz: 'qux'}, 'bar'));
         });
 
+        it('should pass allowViewportOverflow default value to Viewport constructor', () => {
+            browser.captureViewportImage.resolves({baz: 'qux'});
+
+            return capture({viewport: 'foo', pixelRatio: 'bar'})
+            .then(() => assert.calledOnceWith(Viewport.create, 'foo', {baz: 'qux'}, 'bar'), {allowViewportOverflow: false});
+        });
+
+        it('should pass allowViewportOverflow from options option to Viewport constructor', () => {
+            browser.captureViewportImage.resolves({baz: 'qux'});
+
+            return capture({viewport: 'foo', pixelRatio: 'bar'}, {allowViewportOverflow: true})
+                .then(() => assert.calledOnceWith(Viewport.create, 'foo', {baz: 'qux'}, 'bar'), {allowViewportOverflow: true});
+        });
+
         it('should crop image of passed size', () => {
             return capture({captureArea: {foo: 'bar'}})
                 .then(() => assert.calledOnceWith(Viewport.prototype.crop, {foo: 'bar'}));
