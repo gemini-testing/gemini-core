@@ -20,7 +20,7 @@ describe('screen-shooter', () => {
         let browser;
 
         const stubPage = (page) => Object.assign({viewport: {}, captureArea: {}}, page);
-        const capture = (page, errorHandler) => ScreenShooter.create(browser, errorHandler).capture(stubPage(page));
+        const capture = (page, errorHandler, opts) => ScreenShooter.create(browser, errorHandler).capture(stubPage(page), opts);
 
         beforeEach(() => {
             browser = {
@@ -54,6 +54,11 @@ describe('screen-shooter', () => {
 
             return capture({viewport: 'foo', pixelRatio: 'bar'}, {allowViewportOverflow: true})
                 .then(() => assert.calledOnceWith(Viewport.create, 'foo', {baz: 'qux'}, 'bar'), {allowViewportOverflow: true});
+        });
+
+        it('should pass screenshotDelay from options option to captureViewportImage', async () => {
+            await capture(stubPage(), {}, {screenshotDelay: 2000});
+            assert.calledWithMatch(browser.captureViewportImage, sinon.match.any, 2000);
         });
 
         it('should crop image of passed size', () => {
