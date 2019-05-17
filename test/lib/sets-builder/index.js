@@ -62,7 +62,7 @@ describe('sets-builder', () => {
                 .build('/root', globOpts)
                 .then(() => {
                     assert.calledOnce(expandSetFiles);
-                    assert.calledWith(expandSetFiles, {formats: ['.js'], root: '/root'}, {glob: 'opts'});
+                    assert.calledWith(expandSetFiles, {formats: ['.js', '.ts'], root: '/root'}, {glob: 'opts'});
                 });
         });
 
@@ -200,7 +200,7 @@ describe('sets-builder', () => {
                 .build('', globOpts)
                 .then(() => {
                     assert.calledOnce(globExtra.expandPaths);
-                    assert.calledWith(globExtra.expandPaths, ['some/files'], sinon.match({formats: ['.js']}), globOpts);
+                    assert.calledWith(globExtra.expandPaths, ['some/files'], sinon.match({formats: ['.js', '.ts']}), globOpts);
                 });
         });
 
