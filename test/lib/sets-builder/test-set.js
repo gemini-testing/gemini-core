@@ -1,10 +1,20 @@
 'use strict';
 
 const fs = require('fs');
-const TestSet = require('lib/sets-builder/test-set');
+const proxyquire = require('proxyquire');
 
 describe('TestSet', () => {
     const sandbox = sinon.sandbox.create();
+    let TestSet, globExtraStub;
+
+    beforeEach(() => {
+        globExtraStub = {
+            expandPaths: sinon.stub()
+        };
+        TestSet = proxyquire('lib/sets-builder/test-set', {
+            'glob-extra': globExtraStub
+        });
+    });
 
     afterEach(() => sandbox.restore());
 
@@ -20,6 +30,49 @@ describe('TestSet', () => {
         const set = TestSet.create({browsers: ['bro1', 'bro2']});
 
         assert.deepEqual(set.getBrowsers(), ['bro1', 'bro2']);
+    });
+
+    describe('expandFiles', () => {
+        beforeEach(() => {
+            globExtraStub.expandPaths.resolves();
+        });
+
+        it('should expand set file paths', () => {
+            const set = TestSet.create({files: ['some/path/file.js']});
+
+            globExtraStub.expandPaths.resolves(['expanded/some/path/file.js']);
+
+            return set.expandFiles({root: 'root'})
+                .then(() => assert.deepEqual(set.getFiles(), ['expanded/some/path/file.js']));
+        });
+
+        it('should resolve passed ignore masks with project root', () => {
+            const set = TestSet.create({files: ['some/path/file.js'], ignoreFiles: ['some/foo/**']});
+
+            return set.expandFiles({root: '/root'})
+                .then(() => {
+                    assert.calledOnceWith(
+                        globExtraStub.expandPaths,
+                        sinon.match.any,
+                        sinon.match.any,
+                        {ignore: ['/root/some/foo/**']}
+                    );
+                });
+        });
+
+        it('should merge ignore masks from set with ignore from passed arguments', () => {
+            const set = TestSet.create({files: ['some/path/file.js'], ignoreFiles: ['some/foo/**']});
+
+            return set.expandFiles({root: '/root'}, {ignore: ['another/mask/**']})
+                .then(() => {
+                    assert.calledOnceWith(
+                        globExtraStub.expandPaths,
+                        sinon.match.any,
+                        sinon.match.any,
+                        {ignore: ['/root/another/mask/**', '/root/some/foo/**']}
+                    );
+                });
+        });
     });
 
     describe('resolveFiles', () => {

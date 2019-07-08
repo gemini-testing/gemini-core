@@ -52,7 +52,8 @@ const SetsBuilder = require('gemini-core').SetsBuilder;
 const sets = {
     desktop: {
         files: ['desktop/tests/**.js'],
-        browsers: ['bro1']
+        ignoreFiles: ['desktop/tests/fixtures/**'], // exclude directories from reading while test finding
+        browsers: ['bro1'],
     },
     touch-phone: {
         files: ['touch-phone/tests'],

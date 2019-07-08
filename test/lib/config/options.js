@@ -80,6 +80,57 @@ describe('config.sets', () => {
         });
     });
 
+    describe('ignoreFiles', () => {
+        it('should accept array with strings', () => {
+            const config = createConfig({
+                sets: {
+                    someSet: {
+                        files: ['foo'],
+                        ignoreFiles: [
+                            'foo/bar',
+                            'baz'
+                        ]
+                    }
+                }
+            });
+
+            assert.deepEqual(config.sets.someSet.ignoreFiles, [
+                'foo/bar',
+                'baz'
+            ]);
+        });
+
+        describe('should throw an error', () => {
+            const errorMask = /"sets.ignoreFiles" must be an array of strings/;
+
+            it('if "ignoreFiles" is not array', () => {
+                assert.throws(() => {
+                    createConfig({
+                        sets: {
+                            someSet: {
+                                files: ['foo'],
+                                ignoreFiles: 100500
+                            }
+                        }
+                    });
+                }, Error, errorMask);
+            });
+
+            it('if "ignoreFiles" are specified as non-string array', () => {
+                assert.throws(() => {
+                    createConfig({
+                        sets: {
+                            someSet: {
+                                files: ['foo'],
+                                ignoreFiles: [100, 500]
+                            }
+                        }
+                    });
+                }, Error, errorMask);
+            });
+        });
+    });
+
     describe('browsers', () => {
         it('should contain all browsers from config by default', () => {
             const config = createConfig({
@@ -158,6 +209,6 @@ describe('config.sets', () => {
             }
         });
 
-        assert.deepEqual(config.sets, {'': {files: [], browsers: ['b1', 'b2']}});
+        assert.deepEqual(config.sets, {'': {files: [], browsers: ['b1', 'b2'], ignoreFiles: []}});
     });
 });
