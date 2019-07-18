@@ -60,6 +60,20 @@ describe('browser-agent', () => {
             });
     });
 
+    it('should always request browser with passed options', async () => {
+        browserPool.getBrowser
+            .onCall(0).resolves({sessionId: 'foo'})
+            .onCall(1).resolves({sessionId: 'foo'})
+            .onCall(2).resolves({sessionId: 'bar'});
+
+        const browserAgent = BrowserAgent.create('bro', browserPool);
+
+        await browserAgent.getBrowser({some: 'opt'});
+        await browserAgent.getBrowser({some: 'opt'});
+
+        assert.alwaysCalledWith(browserPool.getBrowser, sinon.match.any, {some: 'opt'});
+    });
+
     it('should free passed browser', () => {
         const browserAgent = BrowserAgent.create(null, browserPool);
         const browser = sinon.spy().named('browser');
