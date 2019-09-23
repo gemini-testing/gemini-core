@@ -71,7 +71,7 @@ describe('Viewport', () => {
 
             viewport.ignoreAreas([{top: 1, left: 1, width: 10, height: 10}]);
 
-            assert.calledWith(image.clear, {top: 1, left: 1, width: 10, height: 10}, {scaleFactor: 1});
+            assert.calledWith(image.setIgnoreAreas, [{top: 1, left: 1, width: 10, height: 10}], {scaleFactor: 1});
         });
 
         it('should transform area coordinates to a viewport origin', () => {
@@ -79,7 +79,7 @@ describe('Viewport', () => {
 
             viewport.ignoreAreas([{top: 1, left: 1, width: 10, height: 10}]);
 
-            assert.calledWith(image.clear, {top: 0, left: 0, width: 10, height: 10});
+            assert.calledWith(image.setIgnoreAreas, [{top: 0, left: 0, width: 10, height: 10}]);
         });
 
         it('should crop area size to a viewport origin (inside)', () => {
@@ -88,7 +88,7 @@ describe('Viewport', () => {
             const area = {top: 10, left: 5, width: 20, height: 5};
             viewport.ignoreAreas([area]);
 
-            assert.calledWith(image.clear, area);
+            assert.calledWith(image.setIgnoreAreas, [area]);
         });
 
         it('should crop area size to a viewport origin (bottom right)', () => {
@@ -96,7 +96,7 @@ describe('Viewport', () => {
 
             viewport.ignoreAreas([{top: 10, left: 5, width: 30, height: 5}]);
 
-            assert.calledWith(image.clear, {top: 10, left: 5, width: 25, height: 5});
+            assert.calledWith(image.setIgnoreAreas, [{top: 10, left: 5, width: 25, height: 5}]);
         });
 
         it('should crop area size to a viewport origin (top left)', () => {
@@ -104,7 +104,7 @@ describe('Viewport', () => {
 
             viewport.ignoreAreas([{top: 10, left: 5, width: 20, height: 20}]);
 
-            assert.calledWith(image.clear, {top: 0, left: 0, width: 10, height: 10});
+            assert.calledWith(image.setIgnoreAreas, [{top: 0, left: 0, width: 10, height: 10}]);
         });
 
         it('should not clear image if area is outside of viewport (bottom right)', () => {
@@ -112,7 +112,7 @@ describe('Viewport', () => {
 
             viewport.ignoreAreas([{top: 21, left: 31, width: 30, height: 5}]);
 
-            assert.notCalled(image.clear);
+            assert.notCalled(image.setIgnoreAreas);
         });
 
         it('should not clear image if area is outside of viewport (top left)', () => {
@@ -120,6 +120,24 @@ describe('Viewport', () => {
 
             viewport.ignoreAreas([{top: 0, left: 0, width: 30, height: 20}]);
 
+            assert.notCalled(image.setIgnoreAreas);
+        });
+
+        it('should call clear method if ignoreStyle = solid', () => {
+            const viewport = createViewport({coords: {top: 0, left: 0, width: 30, height: 20}, image, pixelRatio: 1});
+
+            viewport.ignoreAreas([{top: 10, left: 5, width: 20, height: 10}], 'solid');
+
+            assert.notCalled(image.frame);
+            assert.calledWith(image.clear, {top: 10, left: 5, width: 20, height: 10}, {scaleFactor: 1});
+        });
+
+        it('should call frame method if ignoreStyle = border', () => {
+            const viewport = createViewport({coords: {top: 0, left: 0, width: 30, height: 20}, image, pixelRatio: 1});
+
+            viewport.ignoreAreas([{top: 10, left: 5, width: 20, height: 10}], 'border');
+
+            assert.calledWith(image.frame, {top: 10, left: 5, width: 20, height: 10}, {scaleFactor: 1});
             assert.notCalled(image.clear);
         });
     });
