@@ -14,7 +14,7 @@ describe('Viewport', () => {
         opts.coords || {top: 0, left: 0},
         opts.image,
         opts.pixelRatio,
-        opts.allowViewportOverflow
+        {allowViewportOverflow: opts.allowViewportOverflow, insideViewport: opts.insideViewport}
     );
 
     afterEach(() => sandbox.restore());
@@ -23,7 +23,8 @@ describe('Viewport', () => {
         const validate = (opts) => {
             opts = _.defaults(opts || {}, {
                 viewport: {
-                    allowViewportOverflow: opts.allowViewportOverflow
+                    allowViewportOverflow: opts.allowViewportOverflow,
+                    insideViewport: opts.insideViewport
                 },
                 captureArea: {},
                 browser: 'default-bro'
@@ -45,10 +46,12 @@ describe('Viewport', () => {
             assert.calledWith(CoordValidator.create, 'some-browser');
         });
 
-        it('should create coordinates validator with passed allowViewportOverflow option', () => {
-            validate({browser: 'some-browser', allowViewportOverflow: true});
+        ['allowViewportOverflow', 'insideViewport'].forEach((option) => {
+            it(`should create coordinates validator with passed ${option} option`, () => {
+                validate({browser: 'some-browser', [option]: true});
 
-            assert.calledWith(CoordValidator.create, 'some-browser', {allowViewportOverflow: true});
+                assert.calledWith(CoordValidator.create, 'some-browser', sinon.match({[option]: true}));
+            });
         });
 
         it('should validate passed capture area', () => {

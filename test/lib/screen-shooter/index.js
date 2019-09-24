@@ -20,7 +20,7 @@ describe('screen-shooter', () => {
         let browser;
 
         const stubPage = (page) => Object.assign({viewport: {}, captureArea: {}}, page);
-        const capture = (page, errorHandler, opts) => ScreenShooter.create(browser, errorHandler).capture(stubPage(page), opts);
+        const capture = (page, opts, errorHandler) => ScreenShooter.create(browser, errorHandler).capture(stubPage(page), opts);
 
         beforeEach(() => {
             browser = {
@@ -42,22 +42,31 @@ describe('screen-shooter', () => {
                 .then(() => assert.calledOnceWith(Viewport.create, 'foo', {baz: 'qux'}, 'bar'));
         });
 
-        it('should pass allowViewportOverflow default value to Viewport constructor', () => {
-            browser.captureViewportImage.resolves({baz: 'qux'});
+        ['allowViewportOverflow', 'insideViewport'].forEach((option) => {
+            it(`should create Viewport instance with default "${option}" option`, async () => {
+                browser.captureViewportImage.resolves();
 
-            return capture({viewport: 'foo', pixelRatio: 'bar'})
-            .then(() => assert.calledOnceWith(Viewport.create, 'foo', {baz: 'qux'}, 'bar'), {allowViewportOverflow: false});
-        });
+                await capture();
 
-        it('should pass allowViewportOverflow from options option to Viewport constructor', () => {
-            browser.captureViewportImage.resolves({baz: 'qux'});
+                assert.calledOnceWith(
+                    Viewport.create, sinon.match.any, sinon.match.any, sinon.match.any, sinon.match({[option]: false})
+                );
+            });
 
-            return capture({viewport: 'foo', pixelRatio: 'bar'}, {allowViewportOverflow: true})
-                .then(() => assert.calledOnceWith(Viewport.create, 'foo', {baz: 'qux'}, 'bar'), {allowViewportOverflow: true});
+            it(`should create Viewport instance with passed "${option}" option`, async () => {
+                browser.captureViewportImage.resolves();
+
+                await capture({}, {[option]: true});
+
+                assert.calledOnceWith(
+                    Viewport.create, sinon.match.any, sinon.match.any, sinon.match.any, sinon.match({[option]: true})
+                );
+            });
         });
 
         it('should pass screenshotDelay from options option to captureViewportImage', async () => {
-            await capture(stubPage(), {}, {screenshotDelay: 2000});
+            await capture(stubPage(), {screenshotDelay: 2000});
+
             assert.calledWithMatch(browser.captureViewportImage, sinon.match.any, 2000);
         });
 

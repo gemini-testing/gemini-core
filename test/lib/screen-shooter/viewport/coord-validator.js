@@ -54,10 +54,32 @@ describe('CoordValidator', () => {
         });
     });
 
-    it('should not throw OffsetViewportError if option allowViewportOverflow is set', () => {
-        coordValidator = new CoordValidator({id: 'some-browser-id'}, {allowViewportOverflow: true});
+    describe('allowViewportOverflow option is set', () => {
+        it('should not throw OffsetViewportError', () => {
+            coordValidator = new CoordValidator({id: 'some-browser-id'}, {allowViewportOverflow: true});
 
-        assert.doesNotThrow(() => validate_({left: -1}));
+            assert.doesNotThrow(() => validate_({left: -1}));
+        });
+
+        it('should throw HeightViewportError', () => {
+            coordValidator = new CoordValidator({id: 'some-browser-id'}, {allowViewportOverflow: true});
+
+            assert.throws(() => validate_({height: +1}), HeightViewportError);
+        });
+    });
+
+    describe('insideViewport option is set', () => {
+        it('should not throw OffsetViewportError', () => {
+            coordValidator = new CoordValidator({id: 'some-browser-id'}, {insideViewport: true});
+
+            assert.doesNotThrow(() => validate_({left: -1}));
+        });
+
+        it('should not throw HeightViewportError', () => {
+            coordValidator = new CoordValidator({id: 'some-browser-id'}, {insideViewport: true});
+
+            assert.doesNotThrow(() => validate_({height: +1}));
+        });
     });
 
     it('should not throw on passed validation', () => {
