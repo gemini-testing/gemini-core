@@ -194,6 +194,7 @@ describe('Image', () => {
             image.setIgnoreAreas(ignoreAreas, {scaleFactor: 2});
 
             const areas = image.getIgnoreAreas();
+
             assert.deepEqual(areas, [{
                 top: 20,
                 left: 30,
