@@ -128,16 +128,14 @@ describe('Viewport', () => {
 
             viewport.ignoreAreas([{top: 10, left: 5, width: 20, height: 10}], 'solid');
 
-            assert.notCalled(image.frame);
             assert.calledWith(image.clear, {top: 10, left: 5, width: 20, height: 10}, {scaleFactor: 1});
         });
 
-        it('should call frame method if ignoreElementsStyle = border', () => {
+        it('should not call clear method if ignoreElementsStyle = none', () => {
             const viewport = createViewport({coords: {top: 0, left: 0, width: 30, height: 20}, image, pixelRatio: 1});
 
-            viewport.ignoreAreas([{top: 10, left: 5, width: 20, height: 10}], 'border');
+            viewport.ignoreAreas([{top: 10, left: 5, width: 20, height: 10}], 'none');
 
-            assert.calledWith(image.frame, {top: 10, left: 5, width: 20, height: 10}, {scaleFactor: 1});
             assert.notCalled(image.clear);
         });
     });
