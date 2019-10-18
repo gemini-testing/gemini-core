@@ -123,7 +123,7 @@ describe('Viewport', () => {
             assert.notCalled(image.setIgnoreAreas);
         });
 
-        it('should call clear method if ignoreStyle = solid', () => {
+        it('should call clear method if ignoreElementsStyle = solid', () => {
             const viewport = createViewport({coords: {top: 0, left: 0, width: 30, height: 20}, image, pixelRatio: 1});
 
             viewport.ignoreAreas([{top: 10, left: 5, width: 20, height: 10}], 'solid');
@@ -132,7 +132,7 @@ describe('Viewport', () => {
             assert.calledWith(image.clear, {top: 10, left: 5, width: 20, height: 10}, {scaleFactor: 1});
         });
 
-        it('should call frame method if ignoreStyle = border', () => {
+        it('should call frame method if ignoreElementsStyle = border', () => {
             const viewport = createViewport({coords: {top: 0, left: 0, width: 30, height: 20}, image, pixelRatio: 1});
 
             viewport.ignoreAreas([{top: 10, left: 5, width: 20, height: 10}], 'border');
