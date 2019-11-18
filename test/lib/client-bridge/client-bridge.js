@@ -39,13 +39,13 @@ describe('ClientBridge', () => {
         it('should reject if evalScript returns unexpected error', () => {
             const message = 'Something happened';
 
-            browser.evalScript.returns(Promise.resolve({error: message}));
+            browser.evalScript.rejects(new Error(message));
 
             return assert.isRejected(bridge.call('fail'), ClientBridgeError, message);
         });
 
         it('should not attempt to call eval second if it return with unexpected error', () => {
-            browser.evalScript.returns(Promise.resolve({error: 'unexpected'}));
+            browser.evalScript.rejects(new Error('bla'));
 
             return assert.isRejected(bridge.call('fail'))
                 .then(() => assert.calledOnce(browser.evalScript));
@@ -57,7 +57,7 @@ describe('ClientBridge', () => {
             beforeEach(() => {
                 setupAsNonInjected = (finalResult) => {
                     browser.evalScript
-                        .onFirstCall().returns(Promise.resolve({error: 'ERRNOFUNC'}))
+                        .onFirstCall().returns(Promise.resolve({isClientScriptNotInjected: true}))
                         .onSecondCall().returns(Promise.resolve(finalResult));
 
                     browser.injectScript
@@ -92,7 +92,7 @@ describe('ClientBridge', () => {
             });
 
             it('should fail if scripts failed to inject', () => {
-                setupAsNonInjected({error: 'ERRNOFUNC'});
+                setupAsNonInjected({isClientScriptNotInjected: true});
 
                 return assert.isRejected(performCall(), ClientBridgeError);
             });
