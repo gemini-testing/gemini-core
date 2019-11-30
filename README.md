@@ -22,9 +22,11 @@ Utility which contains common modules for [gemini](https://github.com/gemini-tes
 - [Image](#image)
   - [Methods](#methods)
     - [crop](#crop)
+    - [getIgnoreAreas](#getignoreareas)
     - [getSize](#getsize)
     - [getRGBA](#getrgba)
     - [save](#save)
+    - [setIgnoreAreas](#setignoreareas)
     - [clear](#clear)
     - [join](#join)
   - [Static methods](#static-methods)
@@ -261,6 +263,10 @@ const cropArea = {
 image.crop(cropArea, 2); // will crop double sized image i.e width=200, heigth=200 etc.
 ```
 
+##### getIgnoreAreas
+
+Returns an array of objects representing image areas which were set by setIgnoreAreas method. They can be used in `compare` method.
+
 ##### getSize
 
 Returns object with current image size e.g. `{width: 100, height: 100}`
@@ -281,6 +287,29 @@ const color = image.getRGBA(1, 2); // {r: 255, g: 0, b: 0, a:255}
 
 Save image to the passed path. Asynchronous operation.
 Returns Promise with current image instance.
+
+##### setIgnoreAreas
+
+Bound list of areas to an image. Bounded areas will follow all image transformations (join, crop). Usefull in image comparision.
+
+```js
+const image = new Image(imgBuffer);
+const areas = [{
+        top: 10,
+        left: 10,
+        width: 100,
+        height: 100
+    },
+    {
+        top: 200,
+        left: 10,
+        width: 100,
+        height: 100
+    }
+];
+
+image.setIgnoreAreas(areas, {scaleFactor: 1});
+```
 
 ##### clear
 
@@ -333,7 +362,8 @@ const opts = {
     canHaveCaret: true,
     pixelRatio: 1,
     tolerance: 2,
-    antialiasingTolerance: 3
+    antialiasingTolerance: 3,
+    ignoreAreas: [{top: 0, left: 10, width: 50, height: 50}]
 };
 
 return Image.compare(path1, path2, opts)
@@ -352,6 +382,7 @@ const diffOpts = {
     current: '/curr/path/image.png',
     diff: '/diff/path/image.png',
     diffColor: '#f5f5f5',
+    ignoreAreas: [{top: 0, left: 10, width: 50, height: 50}],
     tolerance: 2
 };
 

@@ -181,4 +181,72 @@ describe('Image', () => {
                 });
             });
     });
+
+    describe('ignore areas', () => {
+        const ignoreAreas = [{
+            top: 10,
+            left: 15,
+            width: 50,
+            height: 40
+        }];
+
+        it('should consider pixelRatio for ignore areas', () => {
+            image.setIgnoreAreas(ignoreAreas, {scaleFactor: 2});
+
+            const areas = image.getIgnoreAreas();
+
+            assert.deepEqual(areas, [{
+                top: 20,
+                left: 30,
+                width: 100,
+                height: 80
+            }]);
+        });
+
+        it('should ajust ignore areas on image crop', () => {
+            image.setIgnoreAreas(ignoreAreas, {scaleFactor: 2});
+
+            sandbox.stub(PngImg.prototype, 'crop');
+
+            const rect = {left: 1, top: 2, width: 10, height: 10};
+
+            return image.crop(rect, {scaleFactor: 2})
+                .then(() => {
+                    const areas = image.getIgnoreAreas();
+                    assert.deepEqual(areas, [{
+                        top: 16,
+                        left: 28,
+                        width: 100,
+                        height: 80
+                    }]);
+                });
+        });
+
+        it('should merge ignore areas on image join', () => {
+            image.setIgnoreAreas(ignoreAreas);
+
+            sandbox.stub(PngImg.prototype, 'insert');
+            sandbox.stub(PngImg.prototype, 'setSize').returns(PngImg.prototype);
+            PngImg.prototype.size.returns({width: 150, height: 200});
+
+            image.join(image);
+
+            const areas = image.getIgnoreAreas();
+
+            assert.deepEqual(areas, [
+                {
+                    top: 10,
+                    left: 15,
+                    width: 50,
+                    height: 40
+                },
+                {
+                    top: 210,
+                    left: 15,
+                    width: 50,
+                    height: 40
+                }
+            ]);
+        });
+    });
 });

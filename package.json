@@ -33,7 +33,7 @@
     "gemini-configparser": "^1.0.0",
     "glob-extra": "^4.0.1",
     "lodash": "^4.15.0",
-    "looks-same": "^7.1.1",
+    "looks-same": "https://github.com/insane-developer/looks-same/tarball/ignore-areas",
     "micromatch": "^4.0.2",
     "png-img": "^2.1.1",
     "sizzle": "^2.3.3",
