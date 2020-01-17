@@ -14,7 +14,7 @@ describe('Viewport', () => {
         opts.coords || {top: 0, left: 0},
         opts.image,
         opts.pixelRatio,
-        opts.allowViewportOverflow
+        {allowViewportOverflow: opts.allowViewportOverflow, compositeImage: opts.compositeImage}
     );
 
     afterEach(() => sandbox.restore());
@@ -23,7 +23,8 @@ describe('Viewport', () => {
         const validate = (opts) => {
             opts = _.defaults(opts || {}, {
                 viewport: {
-                    allowViewportOverflow: opts.allowViewportOverflow
+                    allowViewportOverflow: opts.allowViewportOverflow,
+                    compositeImage: opts.compositeImage
                 },
                 captureArea: {},
                 browser: 'default-bro'
@@ -45,10 +46,12 @@ describe('Viewport', () => {
             assert.calledWith(CoordValidator.create, 'some-browser');
         });
 
-        it('should create coordinates validator with passed allowViewportOverflow option', () => {
-            validate({browser: 'some-browser', allowViewportOverflow: true});
+        ['allowViewportOverflow', 'compositeImage'].forEach((option) => {
+            it(`should create coordinates validator with passed "${option}" option`, () => {
+                validate({browser: 'some-browser', [option]: true});
 
-            assert.calledWith(CoordValidator.create, 'some-browser', {allowViewportOverflow: true});
+                assert.calledWith(CoordValidator.create, 'some-browser', sinon.match({[option]: true}));
+            });
         });
 
         it('should validate passed capture area', () => {
@@ -175,10 +178,10 @@ describe('Viewport', () => {
         });
 
         it('should increase viewport height value by scroll height', () => {
-            const viewport = createViewport({coords: {height: 5}, image});
+            const viewport = createViewport({coords: {top: 0, height: 5}, image});
 
             return viewport.extendBy(2, newImage)
-                .then(() => assert.equal(viewport.getVerticalOverflow({height: 7}), 0));
+                .then(() => assert.equal(viewport.getVerticalOverflow({top: 0, height: 7}), 0));
         });
 
         it('should crop new image by passed scroll height', () => {
@@ -202,9 +205,9 @@ describe('Viewport', () => {
 
     describe('getVerticalOverflow', () => {
         it('should get outside height', () => {
-            const viewport = createViewport({coords: {height: 5}});
+            const viewport = createViewport({coords: {top: 0, height: 5}});
 
-            assert.equal(viewport.getVerticalOverflow({height: 15}), 10);
+            assert.equal(viewport.getVerticalOverflow({top: 0, height: 15}), 10);
         });
     });
 });
