@@ -11,6 +11,8 @@ describe('CoordValidator', () => {
 
     function validate_(areaModification) {
         const viewport = {
+            left: 0,
+            top: 0,
             width: 10,
             height: 10
         };
@@ -52,6 +54,12 @@ describe('CoordValidator', () => {
         it('if crop area height bigger than viewport height', () => {
             assert.throws(() => validate_({height: +1}), HeightViewportError);
         });
+    });
+
+    it('should not throw any errors if option "allowViewportOverflow" is set and "compositeImage" is not', () => {
+        coordValidator = new CoordValidator({id: 'some-browser-id'}, {allowViewportOverflow: true, compositeImage: false});
+
+        assert.doesNotThrow(() => validate_({left: -1, height: +1}));
     });
 
     it('should not throw OffsetViewportError if option allowViewportOverflow is set', () => {

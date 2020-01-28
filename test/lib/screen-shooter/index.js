@@ -20,7 +20,7 @@ describe('screen-shooter', () => {
         let browser;
 
         const stubPage = (page) => Object.assign({viewport: {}, captureArea: {}}, page);
-        const capture = (page, errorHandler, opts) => ScreenShooter.create(browser, errorHandler).capture(stubPage(page), opts);
+        const capture = (page, opts) => ScreenShooter.create(browser).capture(stubPage(page), opts);
 
         beforeEach(() => {
             browser = {
@@ -35,29 +35,41 @@ describe('screen-shooter', () => {
                 .then(() => assert.calledOnceWith(browser.captureViewportImage, sinon.match({viewport: 'foo', captureArea: 'bar'})));
         });
 
-        it('should create viewport instance', () => {
-            browser.captureViewportImage.resolves({baz: 'qux'});
+        describe('should create Viewport instance', () => {
+            it('with viewport data', async () => {
+                await capture({viewport: 'foo'});
 
-            return capture({viewport: 'foo', pixelRatio: 'bar'})
-                .then(() => assert.calledOnceWith(Viewport.create, 'foo', {baz: 'qux'}, 'bar'));
+                assert.calledOnceWith(Viewport.create, 'foo');
+            });
+
+            it('with viewport image', async () => {
+                browser.captureViewportImage.resolves({bar: 'baz'});
+
+                await capture();
+
+                assert.calledOnceWith(Viewport.create, sinon.match.any, {bar: 'baz'});
+            });
+
+            it('with pixelRatio data', async () => {
+                await capture({pixelRatio: 'qux'});
+
+                assert.calledOnceWith(Viewport.create, sinon.match.any, sinon.match.any, 'qux');
+            });
+
+            ['allowViewportOverflow', 'compositeImage'].forEach((option) => {
+                it(`with passed "${option}" option`, async () => {
+                    await capture({}, {[option]: true});
+
+                    assert.calledOnceWith(
+                        Viewport.create, sinon.match.any, sinon.match.any, sinon.match.any, sinon.match({[option]: true})
+                    );
+                });
+            });
         });
 
-        it('should pass allowViewportOverflow default value to Viewport constructor', () => {
-            browser.captureViewportImage.resolves({baz: 'qux'});
+        it('should pass screenshotDelay from options to captureViewportImage', async () => {
+            await capture(stubPage(), {screenshotDelay: 2000});
 
-            return capture({viewport: 'foo', pixelRatio: 'bar'})
-            .then(() => assert.calledOnceWith(Viewport.create, 'foo', {baz: 'qux'}, 'bar'), {allowViewportOverflow: false});
-        });
-
-        it('should pass allowViewportOverflow from options option to Viewport constructor', () => {
-            browser.captureViewportImage.resolves({baz: 'qux'});
-
-            return capture({viewport: 'foo', pixelRatio: 'bar'}, {allowViewportOverflow: true})
-                .then(() => assert.calledOnceWith(Viewport.create, 'foo', {baz: 'qux'}, 'bar'), {allowViewportOverflow: true});
-        });
-
-        it('should pass screenshotDelay from options option to captureViewportImage', async () => {
-            await capture(stubPage(), {}, {screenshotDelay: 2000});
             assert.calledWithMatch(browser.captureViewportImage, sinon.match.any, 2000);
         });
 
@@ -86,14 +98,15 @@ describe('screen-shooter', () => {
             });
 
             describe('with `HeightViewportError`', () => {
-                describe('option `compositeImage` is switched off', () => {
-                    it('should not crop image', () => {
-                        return capture({captureArea: {height: 7}, viewport: {height: 5}})
-                            .catch(() => assert.notCalled(Viewport.prototype.crop));
-                    });
+                it('should not crop image if "compositeImage" is switched off', async () => {
+                    try {
+                        await capture({captureArea: {height: 7}, viewport: {top: 0, height: 5}}, {compositeImage: false});
+                    } catch (err) {
+                        assert.notCalled(Viewport.prototype.crop);
+                    }
                 });
 
-                describe('option `compositeImage` is switched on', () => {
+                describe('option "compositeImage" is switched on', () => {
                     let image;
 
                     beforeEach(() => {
@@ -102,69 +115,72 @@ describe('screen-shooter', () => {
                         image.getSize.returns({});
                         image.save.resolves();
 
-                        browser.config.compositeImage = true;
                         browser.captureViewportImage.resolves(image);
                     });
 
-                    it('should scroll vertically if capture area is higher then viewport', () => {
-                        const page = {captureArea: {height: 7}, viewport: {top: 0, height: 5}};
+                    it('should scroll vertically if capture area is higher then viewport', async () => {
+                        const page = {captureArea: {top: 0, height: 7}, viewport: {top: 0, height: 5}};
 
-                        return capture(page)
-                            .then(() => assert.calledOnceWith(browser.scrollBy, 0, 2));
+                        await capture(page, {compositeImage: true});
+
+                        assert.calledOnceWith(browser.scrollBy, 0, 2);
                     });
 
-                    it('should scroll vertically until the end of capture area', () => {
-                        const page = {captureArea: {height: 11}, viewport: {top: 0, height: 5}};
+                    it('should scroll vertically until the end of capture area', async () => {
+                        const page = {captureArea: {top: 0, height: 11}, viewport: {top: 0, height: 5}};
 
-                        return capture(page)
-                            .then(() => {
-                                assert.calledTwice(browser.scrollBy);
-                                assert.calledWith(browser.scrollBy, 0, 5);
-                                assert.calledWith(browser.scrollBy, 0, 1);
-                            });
+                        await capture(page, {compositeImage: true});
+
+                        assert.calledTwice(browser.scrollBy);
+                        assert.calledWith(browser.scrollBy, 0, 5);
+                        assert.calledWith(browser.scrollBy, 0, 1);
                     });
 
-                    it('should capture scrolled viewport image', () => {
-                        const page = {captureArea: {height: 7}, viewport: {top: 0, height: 5}};
+                    it('should capture scrolled viewport image', async () => {
+                        const page = {captureArea: {top: 0, height: 7}, viewport: {top: 0, height: 5}};
 
-                        return capture(page)
-                            .then(() => assert.calledWithMatch(browser.captureViewportImage, {viewport: {top: 2}}));
+                        await capture(page, {compositeImage: true});
+
+                        assert.calledWithMatch(browser.captureViewportImage, {viewport: {top: 2}});
                     });
 
                     // Test does not fairly check that `captureViewportImage` was called after resolving of `scrollBy`
-                    it('should capture viewport image after scroll', () => {
-                        const page = {captureArea: {height: 7}, viewport: {top: 0, height: 5}};
-                        const scrolledPage = {captureArea: {height: 7}, viewport: {top: 2, height: 5}};
+                    it('should capture viewport image after scroll', async () => {
+                        const page = {captureArea: {top: 0, height: 7}, viewport: {top: 0, height: 5}};
+                        const scrolledPage = {captureArea: {top: 0, height: 7}, viewport: {top: 2, height: 5}};
 
                         const captureViewportImage = browser.captureViewportImage.withArgs(scrolledPage).named('captureViewportImage');
                         const scroll = browser.scrollBy.withArgs(0, 2).named('scroll');
 
-                        return capture(page)
-                            .then(() => assert.callOrder(scroll, captureViewportImage));
+                        await capture(page, {compositeImage: true});
+
+                        assert.callOrder(scroll, captureViewportImage);
                     });
 
-                    it('should extend original image by scrolled viewport image', () => {
-                        const page = {captureArea: {height: 7}, viewport: {top: 0, height: 5}};
-
-                        const scrolledPage = {captureArea: {height: 7}, viewport: {top: 2, height: 5}};
+                    it('should extend original image by scrolled viewport image', async () => {
+                        const page = {captureArea: {top: 0, height: 7}, viewport: {top: 0, height: 5}};
+                        const scrolledPage = {captureArea: {top: 0, height: 7}, viewport: {top: 2, height: 5}};
                         const scrolledViewportScreenshot = image;
 
                         browser.captureViewportImage.withArgs(scrolledPage).returns(Promise.resolve(scrolledViewportScreenshot));
 
-                        return capture(page)
-                            .then(() => assert.calledOnceWith(Viewport.prototype.extendBy, 2, scrolledViewportScreenshot));
+                        await capture(page, {compositeImage: true});
+
+                        assert.calledOnceWith(Viewport.prototype.extendBy, 2, scrolledViewportScreenshot);
                     });
 
-                    it('should crop capture area which is higher then viewport', () => {
-                        const page = {captureArea: {height: 7}, viewport: {top: 0, height: 5}};
+                    it('should crop capture area which is higher then viewport', async () => {
+                        const page = {captureArea: {top: 0, height: 7}, viewport: {top: 0, height: 5}};
 
-                        return capture(page)
-                            .then(() => assert.calledOnceWith(Viewport.prototype.crop, page.captureArea));
+                        await capture(page, {compositeImage: true});
+
+                        assert.calledOnceWith(Viewport.prototype.crop, page.captureArea);
                     });
 
-                    it('should clear configured ignore areas', () => {
-                        return capture({ignoreAreas: {foo: 'bar'}})
-                            .then(() => assert.calledWith(Viewport.prototype.ignoreAreas, {foo: 'bar'}));
+                    it('should clear configured ignore areas', async () => {
+                        await capture({ignoreAreas: {foo: 'bar'}}, {compositeImage: true});
+
+                        assert.calledWith(Viewport.prototype.ignoreAreas, {foo: 'bar'});
                     });
 
                     it('should return cropped image', () => {
