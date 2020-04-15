@@ -66,6 +66,16 @@ describe('sets-builder', () => {
                 });
         });
 
+        it('should expand files from sets using passed file extensions', () => {
+            const expandSetFiles = sandbox.spy(TestSet.prototype, 'expandFiles');
+
+            return createSetBuilder()
+                .build('/root', {}, ['.foo', '.bar'])
+                .then(() => {
+                    assert.calledOnceWith(expandSetFiles, sinon.match({formats: ['.foo', '.bar']}), sinon.match.any);
+                });
+        });
+
         it('should use default directory', () => {
             sandbox.stub(TestSet.prototype, 'expandFiles');
             globExtra.expandPaths.withArgs(['project/path']).returns(Promise.resolve(['project/path']));

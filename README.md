@@ -63,17 +63,17 @@ const sets = {
 
 SetsBuilder
     .create(sets, {defaultDir: 'default/path'}) // creates setsBuilder using specified tests and options
-    .useSets(['desktop']) // use only the specified sets
-    .useBrowsers(['bro1']) // use only specified browsers
-    .useFiles(['desktop/tests/test.js']) // use only specified files if sets
-                                      //and files to use are not specified
-    .build('/root', globOpts) // builds a collection of sets with paths expanded according
-                                  // to the project root and glob options
+    .useSets(['desktop'])                       // use only the specified sets
+    .useBrowsers(['bro1'])                      // use only specified browsers
+    .useFiles(['desktop/tests/test.js'])        // use only specified files if sets
+                                                // and files to use are not specified
+    .build('/root', globOpts, ['.js', '.ts'])   // builds a collection of sets with paths expanded according
+                                                // to the project root, glob options and file extensions
     .then((setCollection) => {
-        setCollection.groupByFile(); // groups all browsers of test-sets by file:
-                                    // {'desktop/tests/test.js': ['bro1']}
+        setCollection.groupByFile();    // groups all browsers of test-sets by file:
+                                        // {'desktop/tests/test.js': ['bro1']}
         setCollection.groupByBrowser(); // groups all files of test-sets by browser:
-                                       // {'bro': ['desktop/tests/test.js']}
+                                        // {'bro': ['desktop/tests/test.js']}
     })
     .done();
 ```
