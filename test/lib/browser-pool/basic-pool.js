@@ -37,6 +37,14 @@ describe('browser-pool/basic-pool', () => {
             .then(() => assert.calledWith(browserManager.create, 'broId'));
     });
 
+    it('should create new browser with specified version when requested', () => {
+        const browserManager = stubBrowserManager_();
+        const pool = mkPool_({browserManager});
+
+        return pool.getBrowser('broId', {version: '1.0'})
+            .then(() => assert.calledWith(browserManager.create, 'broId', '1.0'));
+    });
+
     it('should launch a browser', () => {
         const browser = stubBrowser();
         const browserManager = stubBrowserManager_();
@@ -45,7 +53,7 @@ describe('browser-pool/basic-pool', () => {
 
         return pool.getBrowser()
             .then(() => {
-                assert.calledOnce(browserManager.start);
+                assert.calledOnceWith(browserManager.start);
                 assert.calledWith(browserManager.start, browser);
             });
     });
