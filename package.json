@@ -1,6 +1,6 @@
 {
   "name": "gemini-core",
-  "version": "5.2.2",
+  "version": "5.3.0",
   "description": "Utility which contains common modules for gemini and hermione",
   "main": "index.js",
   "bugs": "https://github.com/gemini-testing/gemini-core/issues",
