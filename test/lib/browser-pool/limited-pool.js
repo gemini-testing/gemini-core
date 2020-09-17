@@ -9,7 +9,10 @@ describe('browser-pool/limited-pool', () => {
     const sandbox = sinon.sandbox.create();
     let underlyingPool;
 
-    const makePool_ = (limit) => new LimitedPool(underlyingPool, {limit: limit || 1, logNamespace: 'gemini'});
+    const makePool_ = ({limit = 1, isSpecificBrowserLimiter = true} = {}) => new LimitedPool(
+        underlyingPool,
+        {limit, isSpecificBrowserLimiter, logNamespace: 'hermione'}
+    );
 
     beforeEach(() => {
         underlyingPool = {
@@ -43,7 +46,7 @@ describe('browser-pool/limited-pool', () => {
 
     describe('freeBrowser', () => {
         it('should correctly pass params to an underlying pool to be able to force free', async () => {
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
             const browser = stubBrowser('bro');
 
             underlyingPool.getBrowser.returns(Promise.resolve(browser));
@@ -60,7 +63,7 @@ describe('browser-pool/limited-pool', () => {
         });
 
         it('should handle case if there is no next item in queue', async () => {
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
             const browser = stubBrowser('bro');
 
             underlyingPool.getBrowser.returns(Promise.resolve(browser));
@@ -90,10 +93,20 @@ describe('browser-pool/limited-pool', () => {
                 .then(() => assert.calledWith(underlyingPool.freeBrowser, browser));
         });
 
-        it('for release if there are no more requests', () => {
+        it('for release with force if there are no more requests in specific browser limiter', () => {
+            pool = makePool_({isSpecificBrowserLimiter: true});
+
             return pool.getBrowser('first')
                 .then(() => pool.freeBrowser(browser))
                 .then(() => assert.calledWith(underlyingPool.freeBrowser, browser, sinon.match({force: true})));
+        });
+
+        it('for release without force if there are no more requests in all browser limiter', () => {
+            pool = makePool_({isSpecificBrowserLimiter: false});
+
+            return pool.getBrowser('first')
+                .then(() => pool.freeBrowser(browser))
+                .then(() => assert.calledWith(underlyingPool.freeBrowser, browser, sinon.match({force: false})));
         });
 
         it('for caching if there is at least one pending request', () => {
@@ -126,7 +139,7 @@ describe('browser-pool/limited-pool', () => {
 
         it('taking into account number of failed browser requests', () => {
             const browser = stubBrowser();
-            const pool = makePool_(2);
+            const pool = makePool_({limit: 2});
 
             underlyingPool.getBrowser
                 .withArgs('first').returns(Promise.resolve(browser))
@@ -159,7 +172,7 @@ describe('browser-pool/limited-pool', () => {
             underlyingPool.getBrowser
                 .withArgs('first').returns(Promise.resolve(stubBrowser()))
                 .withArgs('second').returns(Promise.resolve(stubBrowser()));
-            const pool = makePool_(2);
+            const pool = makePool_({limit: 2});
 
             return Promise.all([pool.getBrowser('first'), pool.getBrowser('second')])
                 .then(() => {
@@ -171,7 +184,7 @@ describe('browser-pool/limited-pool', () => {
 
         it('should not launch browsers out of limit', () => {
             underlyingPool.getBrowser.returns(Promise.resolve(stubBrowser()));
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
 
             const result = pool.getBrowser('first')
                 .then(() => pool.getBrowser('second').timeout(100, 'timeout'));
@@ -181,7 +194,7 @@ describe('browser-pool/limited-pool', () => {
 
         it('should launch next browser after previous is released', () => {
             const expectedBrowser = stubBrowser();
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
 
             underlyingPool.getBrowser
                 .withArgs('first').returns(Promise.resolve(stubBrowser()))
@@ -196,7 +209,7 @@ describe('browser-pool/limited-pool', () => {
 
         it('should launch queued browser when previous is released', () => {
             const expectedBrowser = stubBrowser();
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
 
             underlyingPool.getBrowser
                 .withArgs('first').returns(Promise.resolve(stubBrowser()))
@@ -218,7 +231,7 @@ describe('browser-pool/limited-pool', () => {
             const secondBrowserRequest = underlyingPool.getBrowser.withArgs('second').named('secondRequest');
             const thirdBrowserRequest = underlyingPool.getBrowser.withArgs('third').named('thirdRequest');
 
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
             const free_ = (bro) => pool.freeBrowser(bro);
 
             await Promise.all([
@@ -236,7 +249,7 @@ describe('browser-pool/limited-pool', () => {
 
         it('should launch next browsers if free failed', () => {
             const expectedBrowser = stubBrowser();
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
 
             underlyingPool.getBrowser
                 .withArgs('first').returns(Promise.resolve(stubBrowser()))
@@ -255,7 +268,7 @@ describe('browser-pool/limited-pool', () => {
         });
 
         it('should not wait for queued browser to start after release browser', () => {
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
             const afterFree = sinon.spy().named('afterFree');
             const afterSecondGet = sinon.spy().named('afterSecondGet');
 
@@ -278,7 +291,7 @@ describe('browser-pool/limited-pool', () => {
         });
 
         it('should reject the queued call when underlying pool rejects the request', () => {
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
             const error = new Error('You shall not pass');
             underlyingPool.getBrowser
                 .onSecondCall().callsFake(() => Promise.reject(error));
@@ -294,7 +307,7 @@ describe('browser-pool/limited-pool', () => {
 
     describe('cancel', () => {
         it('should cancel queued browsers', async () => {
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
 
             const firstRequest = pool.getBrowser('bro').then((bro) => {
                 pool.cancel();
@@ -310,7 +323,7 @@ describe('browser-pool/limited-pool', () => {
         });
 
         it('should cancel an underlying pool', () => {
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
 
             pool.cancel();
 
@@ -318,7 +331,7 @@ describe('browser-pool/limited-pool', () => {
         });
 
         it('should reset request queue', async () => {
-            const pool = makePool_(1);
+            const pool = makePool_({limit: 1});
             const free_ = (bro) => pool.freeBrowser(bro);
 
             await Promise.all([
