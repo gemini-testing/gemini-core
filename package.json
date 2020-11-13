@@ -33,7 +33,7 @@
     "gemini-configparser": "^1.0.0",
     "glob-extra": "^5.0.0",
     "lodash": "^4.17.15",
-    "looks-same": "^7.2.4",
+    "looks-same": "github:gemini-testing/looks-same#FEI-20523.compare_screens_by_buffer",
     "micromatch": "^4.0.2",
     "png-img": "^3.0.0",
     "sizzle": "^2.3.3",
