@@ -204,6 +204,8 @@ describe('sets-builder', () => {
 
         it('should expand passed files with passed glob options', () => {
             const globOpts = sandbox.stub();
+            sandbox.stub(TestSet.prototype, 'useFiles');
+            globExtra.expandPaths.withArgs(['some/files']).returns(Promise.resolve(['some/files/file.js']));
 
             return createSetBuilder()
                 .useFiles(['some/files'])
@@ -245,6 +247,17 @@ describe('sets-builder', () => {
                     assert.calledWith(globExtra.expandPaths, ['project/path']);
                     assert.deepEqual(result, setCollection);
                 });
+        });
+
+        it('should throw an error if no files were found with specified masks', () => {
+            const sets = {
+                all: {files: ['some/files', 'more/files']}
+            };
+
+            return assert.isRejected(createSetBuilder(sets)
+                .useFiles(['another/files'])
+                .build(),
+                /Did not find files with the specified masks: .*/);
         });
     });
 
