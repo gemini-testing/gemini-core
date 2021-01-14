@@ -204,6 +204,8 @@ describe('sets-builder', () => {
 
         it('should expand passed files with passed glob options', () => {
             const globOpts = sandbox.stub();
+            sandbox.stub(TestSet.prototype, 'useFiles');
+            globExtra.expandPaths.withArgs(['some/files']).resolves(['some/files/file.js']);
 
             return createSetBuilder()
                 .useFiles(['some/files'])
@@ -214,9 +216,18 @@ describe('sets-builder', () => {
                 });
         });
 
+        it('should throw an error if no files were found with specified paths', () => {
+            globExtra.expandPaths.withArgs(['some/files']).resolves([]);
+
+            return assert.isRejected(
+                createSetBuilder().useFiles(['some/files', 'another/files']).build(),
+                /Cannot find files by specified paths: some\/files, another\/files/
+            );
+        });
+
         it('should apply files to all sets if sets are specified', () => {
             sandbox.stub(TestSet.prototype, 'useFiles');
-            globExtra.expandPaths.withArgs(['some/files']).returns(Promise.resolve(['some/files/file.js']));
+            globExtra.expandPaths.withArgs(['some/files']).resolves(['some/files/file.js']);
 
             const sets = {
                 all: {files: ['some/files']}
