@@ -58,20 +58,34 @@ describe('browser-pool/basic-pool', () => {
             });
     });
 
-    it('should finalize browser if failed to create it', () => {
-        const browser = stubBrowser();
+    it('should not finalize browser if failed to start it', async () => {
+        const publicAPI = null;
+        const browser = stubBrowser('some-id', 'some-version', publicAPI);
 
         const browserManager = stubBrowserManager_();
         browserManager.create.returns(browser);
-        browserManager.start.returns(Promise.reject());
+        browserManager.start.rejects();
 
         const pool = mkPool_({browserManager});
 
-        return assert.isRejected(pool.getBrowser())
-            .then(() => {
-                assert.calledOnce(browserManager.quit);
-                assert.calledWith(browserManager.quit, browser);
-            });
+        await assert.isRejected(pool.getBrowser());
+
+        assert.notCalled(browserManager.quit);
+    });
+
+    it('should finalize browser if failed after start it', async () => {
+        const publicAPI = {};
+        const browser = stubBrowser('some-id', 'some-version', publicAPI);
+
+        const browserManager = stubBrowserManager_();
+        browserManager.create.returns(browser);
+        browserManager.onStart.rejects();
+
+        const pool = mkPool_({browserManager});
+
+        await assert.isRejected(pool.getBrowser());
+
+        assert.calledOnceWith(browserManager.quit, browser);
     });
 
     describe('onStart', () => {
