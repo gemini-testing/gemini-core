@@ -59,9 +59,9 @@ describe('browser/camera', () => {
             });
 
             describe('crop to viewport', () => {
-                const mkCamera_ = (browserOptions) => {
+                const mkCamera_ = (browserOptions, browser) => {
                     const screenshotMode = (browserOptions || {}).screenshotMode || 'auto';
-                    return new Camera(screenshotMode, sinon.stub().resolves());
+                    return new Camera(screenshotMode, sinon.stub().resolves(), browser);
                 };
 
                 const page = {
@@ -95,6 +95,20 @@ describe('browser/camera', () => {
                     utils.isFullPage.withArgs(image, page, 'viewport').returns(false);
 
                     return mkCamera_({screenshotMode: 'viewport'}).captureViewportImage(page)
+                        .then(() => {
+                            assert.calledWith(image.crop, {
+                                top: 0, left: 0,
+                                width: page.viewport.width,
+                                height: page.viewport.height
+                            });
+                        });
+                });
+
+                it('should not crop image from top and left when on android phone', () => {
+                    utils.isFullPage.returns(true);
+
+                    return mkCamera_({screenshotMode: 'viewport'}, {publicAPI: {isMobile: true, isAndroid: true}})
+                        .captureViewportImage(page)
                         .then(() => {
                             assert.calledWith(image.crop, {
                                 top: 0, left: 0,
