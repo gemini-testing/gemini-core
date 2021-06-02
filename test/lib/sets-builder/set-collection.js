@@ -51,4 +51,34 @@ describe('set-collection', () => {
             'bro3': ['some/files/file1.js', 'other/files/file2.js']
         });
     });
+
+    it('should group files by browser and file', () => {
+        const sets = {
+            set1: TestSet.create({
+                files: ['some/files/file1.js'],
+                browsers: ['bro1', 'bro3']
+            }),
+            set2: TestSet.create({
+                files: ['other/files/file2.js', 'some/files/file1.js'],
+                browsers: ['bro2', 'bro3']
+            })
+        };
+        const groupedFiles = SetCollection
+            .create(sets)
+            .groupByBrowserAndFile();
+
+        assert.deepEqual(groupedFiles, {
+            'bro1': {
+                'some/files/file1.js': ['set1']
+            },
+            'bro2': {
+                'some/files/file1.js': ['set2'],
+                'other/files/file2.js': ['set2']
+            },
+            'bro3': {
+                'some/files/file1.js': ['set1', 'set2'],
+                'other/files/file2.js': ['set2']
+            }
+        });
+    });
 });

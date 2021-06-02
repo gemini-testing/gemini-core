@@ -70,10 +70,12 @@ SetsBuilder
     .build('/root', globOpts, ['.js', '.ts'])   // builds a collection of sets with paths expanded according
                                                 // to the project root, glob options and file extensions
     .then((setCollection) => {
-        setCollection.groupByFile();    // groups all browsers of test-sets by file:
-                                        // {'desktop/tests/test.js': ['bro1']}
-        setCollection.groupByBrowser(); // groups all files of test-sets by browser:
-                                        // {'bro': ['desktop/tests/test.js']}
+        setCollection.groupByFile();            // groups all browsers of test-sets by file:
+                                                // {'desktop/tests/test.js': ['bro1']}
+        setCollection.groupByBrowser();         // groups all files of test-sets by browser:
+                                                // {'bro': ['desktop/tests/test.js']}
+        setCollection.groupByBrowserAndFile();  // groups all files of test-sets by browser and file:
+                                                // {'bro': { 'desktop/tests/test.js': ['desktop'] }}
     })
     .done();
 ```
