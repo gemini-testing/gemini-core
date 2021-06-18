@@ -123,7 +123,15 @@ describe('screen-shooter', () => {
 
                         await capture(page, {compositeImage: true});
 
-                        assert.calledOnceWith(browser.scrollBy, 0, 2);
+                        assert.calledOnceWith(browser.scrollBy, {x: 0, y: 2, selector: undefined});
+                    });
+
+                    it('should scroll vertically relative to the passed "selectorToScroll" option', async () => {
+                        const page = {captureArea: {top: 0, height: 7}, viewport: {top: 0, height: 5}};
+
+                        await capture(page, {compositeImage: true, selectorToScroll: '.some-elem'});
+
+                        assert.calledOnceWith(browser.scrollBy, {x: 0, y: 2, selector: '.some-elem'});
                     });
 
                     it('should scroll vertically until the end of capture area', async () => {
@@ -132,8 +140,8 @@ describe('screen-shooter', () => {
                         await capture(page, {compositeImage: true});
 
                         assert.calledTwice(browser.scrollBy);
-                        assert.calledWith(browser.scrollBy, 0, 5);
-                        assert.calledWith(browser.scrollBy, 0, 1);
+                        assert.calledWith(browser.scrollBy, {x: 0, y: 5, selector: undefined});
+                        assert.calledWith(browser.scrollBy, {x: 0, y: 1, selector: undefined});
                     });
 
                     it('should capture scrolled viewport image', async () => {
@@ -150,7 +158,7 @@ describe('screen-shooter', () => {
                         const scrolledPage = {captureArea: {top: 0, height: 7}, viewport: {top: 2, height: 5}};
 
                         const captureViewportImage = browser.captureViewportImage.withArgs(scrolledPage).named('captureViewportImage');
-                        const scroll = browser.scrollBy.withArgs(0, 2).named('scroll');
+                        const scroll = browser.scrollBy.withArgs({x: 0, y: 2, selector: undefined}).named('scroll');
 
                         await capture(page, {compositeImage: true});
 
