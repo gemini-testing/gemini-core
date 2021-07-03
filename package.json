@@ -35,6 +35,7 @@
     "lodash": "^4.17.15",
     "looks-same": "^7.3.0",
     "micromatch": "^4.0.2",
+    "normalize-path": "^3.0.0",
     "png-img": "^3.3.0",
     "sizzle": "^2.3.3",
     "temp": "^0.8.3",
