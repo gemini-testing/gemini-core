@@ -35,7 +35,7 @@
     "lodash": "^4.17.15",
     "looks-same": "^7.3.0",
     "micromatch": "^4.0.2",
-    "png-img": "^3.3.4",
+    "png-img": "^3.3.5",
     "sizzle": "^2.3.3",
     "temp": "^0.8.3",
     "uglify-js": "^2.8.29",
