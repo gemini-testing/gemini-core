@@ -1,14 +1,14 @@
 'use strict';
 
-const PngImg = require('png-img');
+const PngImg = require('png-img').default;
 const utils = require('png-img/utils');
 const proxyquire = require('proxyquire');
 
 const looksSameStub = sinon.stub();
 const Image = proxyquire('build/lib/image', {
     'looks-same': looksSameStub
-});
-const SafeRect = require('build/lib/image/safe-rect');
+}).default;
+const SafeRect = require('build/lib/image/safe-rect').default;
 
 describe('Image', () => {
     const sandbox = sinon.sandbox.create();

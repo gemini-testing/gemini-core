@@ -3,8 +3,8 @@
 const path = require('path');
 const fs = require('fs');
 const Promise = require('bluebird');
-const Image = require('build/lib/image');
-const Calibrator = require('build/lib/calibrator');
+const Image = require('build/lib/image').default;
+const Calibrator = require('build/lib/calibrator').default;
 const {CoreError} = require('build/lib/errors');
 
 describe('calibrator', () => {

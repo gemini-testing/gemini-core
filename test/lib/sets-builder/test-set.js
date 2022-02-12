@@ -13,7 +13,7 @@ describe('TestSet', () => {
         };
         TestSet = proxyquire('build/lib/sets-builder/test-set', {
             'glob-extra': globExtraStub
-        });
+        }).default;
     });
 
     afterEach(() => sandbox.restore());

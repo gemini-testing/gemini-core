@@ -2,7 +2,7 @@
 
 const Promise = require('bluebird');
 
-const AsyncEmitter = require('build/lib/events/async-emitter');
+const AsyncEmitter = require('build/lib/events/async-emitter').default;
 const utils = require('build/lib/events/utils');
 
 describe('events/utils', () => {

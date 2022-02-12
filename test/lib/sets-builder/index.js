@@ -3,9 +3,9 @@
 const Promise = require('bluebird');
 const globExtra = require('glob-extra');
 const fs = require('fs');
-const SetBuilder = require('build/lib/sets-builder');
-const SetCollection = require('build/lib/sets-builder/set-collection');
-const TestSet = require('build/lib/sets-builder/test-set');
+const SetBuilder = require('build/lib/sets-builder').default;
+const SetCollection = require('build/lib/sets-builder/set-collection').default;
+const TestSet = require('build/lib/sets-builder/test-set').default;
 
 describe('sets-builder', () => {
     const sandbox = sinon.sandbox.create();

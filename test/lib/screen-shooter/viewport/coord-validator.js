@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const CoordValidator = require('build/lib/screen-shooter/viewport/coord-validator');
+const CoordValidator = require('build/lib/screen-shooter/viewport/coord-validator').default;
 const HeightViewportError = require('build/lib/screen-shooter/viewport/coord-validator/errors/height-viewport-error');
 const OffsetViewportError = require('build/lib/screen-shooter/viewport/coord-validator/errors/offset-viewport-error');
 

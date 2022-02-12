@@ -1,6 +1,6 @@
 'use strict';
 
-const BasicPool = require('build/lib/browser-pool/basic-pool');
+const BasicPool = require('build/lib/browser-pool/basic-pool').default;
 const CancelledError = require('build/lib/errors/cancelled-error');
 const stubBrowser = require('./util').stubBrowser;
 const _ = require('lodash');
