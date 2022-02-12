@@ -1,13 +1,24 @@
-'use strict';
+import _ from "lodash";
 
-const _ = require('lodash');
+type StatNames<T extends string = 'passed' | 'failed' | 'skipped'> = Record<Uppercase<T>, Lowercase<T>>;
 
-module.exports = class BaseStats {
-    static create(...args) {
-        return new this(...args);
+type Stats = { [StatName in StatNames[keyof StatNames]]: number };
+type StatsResult = Stats & {
+    total: number;
+    retries: number;
+};
+
+export default class BaseStats {
+    private _tests: Set<string>;
+    private _retries: number;
+    private _statNames: StatNames;
+    private _stats: Stats;
+
+    public static create(statNames: StatNames): BaseStats {
+        return new this(statNames);
     }
 
-    constructor(statNames) {
+    constructor(statNames: StatNames) {
         this._tests = new Set();
         this._retries = 0;
         this._statNames = statNames;
@@ -15,44 +26,44 @@ module.exports = class BaseStats {
         this._stats = this._fillEmptyStats();
     }
 
-    addPassed(test) {
+    public addPassed(test: unknown) {
         this._addStat(this._statNames.PASSED, test);
     }
 
-    addFailed(test) {
+    public addFailed(test: unknown) {
         this._addStat(this._statNames.FAILED, test);
     }
 
-    addSkipped(test) {
+    public addSkipped(test: unknown) {
         this._addStat(this._statNames.SKIPPED, test);
     }
 
-    addRetries() {
+    public addRetries() {
         this._retries++;
     }
 
-    _addStat(stat, test, statsStorage = this._stats, testsStorage = this._tests) {
+    private _addStat(stat: StatNames[keyof StatNames], test: unknown, statsStorage = this._stats, testsStorage = this._tests) {
         const key = `${this._buildSuiteKey(test)} ${this._buildStateKey(test)}`;
 
         statsStorage[stat]++;
         testsStorage.add(key);
     }
 
-    _fillEmptyStats() {
+    private _fillEmptyStats(): Stats {
         const statValues = _.values(this._statNames);
 
-        return _.zipObject(statValues, Array(statValues.length).fill(0));
+        return _.zipObject(statValues, Array(statValues.length).fill(0)) as Stats;
     }
 
-    _buildStateKey() {
+    private _buildStateKey(_test: unknown): string {
         throw new Error('Method must be implemented in child classes');
     }
 
-    _buildSuiteKey() {
+    private _buildSuiteKey(_test: unknown): string {
         throw new Error('Method must be implemented in child classes');
     }
 
-    getResult() {
+    public getResult(): StatsResult {
         return _.extend(this._stats, {
             total: this._tests.size,
             retries: this._retries
