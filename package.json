@@ -53,6 +53,7 @@
     "@types/lodash": "^4.14.178",
     "@types/micromatch": "^4.0.2",
     "@types/node": "^8.10.66",
+    "@types/temp": "^0.9.1",
     "@types/webdriverio": "^5.0.0",
     "@types/yallist": "^4.0.1",
     "app-module-path": "^1.1.0",

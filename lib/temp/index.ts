@@ -1,46 +1,54 @@
-'use strict';
-
-const temp = require('temp');
-const path = require('path');
-const _ = require('lodash');
+import temp from 'temp';
+import { resolve as resolvePath } from 'path';
+import _ from 'lodash';
 
 temp.track();
 
+type TempConstructorOpts = {
+    attach?: boolean;
+};
+type SerializedTemp = {
+    dir: string;
+};
+
 class Temp {
-    constructor(dir, opts = {}) {
+    private _tempDir: string;
+
+    constructor(dir: string, opts: TempConstructorOpts = {}) {
         this._tempDir = opts.attach
             ? dir
             : temp.mkdirSync({
-                dir: dir && path.resolve(dir),
+                dir: dir && resolvePath(dir),
                 prefix: '.screenshots.tmp.'
             });
     }
 
-    path(opts = {}) {
+    path(opts: temp.AffixOptions = {}): string {
         return temp.path(_.extend(opts, {
             dir: this._tempDir
         }));
     }
 
-    serialize() {
+    serialize(): SerializedTemp {
         return {dir: this._tempDir};
     }
 }
 
-let tempInstance;
-module.exports = {
-    init: (dir) => {
-        if (!tempInstance) {
-            tempInstance = new Temp(dir);
-        }
-    },
+let tempInstance: Temp;
 
-    attach: (serializedTemp) => {
-        if (!tempInstance) {
-            tempInstance = new Temp(serializedTemp.dir, {attach: true});
-        }
-    },
-
-    path: (opts) => tempInstance.path(opts),
-    serialize: () => tempInstance.serialize()
-};
+export function init(dir: string): void {
+    if (!tempInstance) {
+        tempInstance = new Temp(dir);
+    }
+}
+export function attach(serializedTemp: SerializedTemp): void {
+    if (!tempInstance) {
+        tempInstance = new Temp(serializedTemp.dir, {attach: true});
+    }
+}
+export function path(opts: temp.AffixOptions): string {
+    return tempInstance.path(opts);
+}
+export function serialize(): SerializedTemp {
+    return tempInstance.serialize();
+}
