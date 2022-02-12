@@ -1,17 +1,21 @@
-'use strict';
-exports.FULL = 'full';
-exports.PARTIAL = 'partial';
-exports.NONE = 'none';
+export enum CoverageValue {
+    FULL = 'full',
+    PARTIAL = 'partial',
+    NONE = 'none'
+}
 
-exports.merge = function(oldValue, newValue) {
-    oldValue = oldValue || exports.NONE;
-    if (oldValue === exports.FULL || newValue === exports.FULL) {
-        return exports.FULL;
+export const FULL = CoverageValue.FULL;
+export const PARTIAL = CoverageValue.PARTIAL;
+export const NONE = CoverageValue.NONE;
+
+export function merge(oldValue: CoverageValue = CoverageValue.NONE, newValue: CoverageValue): CoverageValue {
+    if (oldValue === CoverageValue.FULL || newValue === CoverageValue.FULL) {
+        return CoverageValue.FULL;
     }
 
-    if (oldValue === exports.PARTIAL || newValue === exports.PARTIAL) {
-        return exports.PARTIAL;
+    if (oldValue === CoverageValue.PARTIAL || newValue === CoverageValue.PARTIAL) {
+        return CoverageValue.PARTIAL;
     }
 
-    return exports.NONE;
+    return CoverageValue.NONE;
 };
