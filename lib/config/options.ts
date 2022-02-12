@@ -1,13 +1,17 @@
-'use strict';
+import _ from 'lodash';
+import { section, map, option } from 'gemini-configparser';
 
-const _ = require('lodash');
-const configparser = require('gemini-configparser');
+export type SetConfig = {
+    files: Array<string>;
+    ignoreFiles: Array<string>;
+    browsers: Array<string>;
+};
 
-const section = configparser.section;
-const option = configparser.option;
-const map = configparser.map;
+export type SetsConfig = {
+    [platform: string]: SetConfig;
+};
 
-module.exports = {
+export default {
     sets: map(section({
         files: option({
             validate: (value) => {
@@ -19,10 +23,10 @@ module.exports = {
                     throw new Error('"sets.files" must be an array of strings');
                 }
             },
-            map: (val) => [].concat(val)
+            map: (val: string | Array<string>) => ([] as Array<string>).concat(val)
         }),
         ignoreFiles: option({
-            defaultValue: [],
+            defaultValue: [] as Array<string>,
             validate: (value) => {
                 if (!_.isArray(value) || !_.every(value, _.isString)) {
                     throw new Error('"sets.ignoreFiles" must be an array of strings');
