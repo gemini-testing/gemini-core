@@ -1,6 +1,7 @@
-'use strict';
+import type { ScreenshotMode } from ".";
+import type Image from "../../image";
 
-exports.isFullPage = (image, page, screenshotMode) => {
+export function isFullPage(image: Image, page: any, screenshotMode: ScreenshotMode): boolean {
     switch (screenshotMode) {
         case 'fullpage': return true;
         case 'viewport': return false;
@@ -14,7 +15,7 @@ exports.isFullPage = (image, page, screenshotMode) => {
  * @returns {boolean}
  * @private
  */
-function compareDimensions(image, page) {
+function compareDimensions(image: Image, page: any): boolean {
     const pixelRatio = page.pixelRatio;
     const documentWidth = page.documentWidth * pixelRatio;
     const documentHeight = page.documentHeight * pixelRatio;
