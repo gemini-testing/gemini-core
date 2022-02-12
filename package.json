@@ -6,10 +6,12 @@
   "bugs": "https://github.com/gemini-testing/gemini-core/issues",
   "scripts": {
     "lint": "eslint .",
-    "prepublish": "npm run prepare-calibrate-script",
-    "prepare-calibrate-script": "uglifyjs ./lib/browser/client-scripts/calibrate.js -m > ./lib/browser/client-scripts/calibrate.min.js --support-ie8",
+    "build": "tsc -p tsconfig.json",
+    "postbuild": "npm run prepare-calibrate-script",
+    "prepare-calibrate-script": "uglifyjs ./build/lib/browser/client-scripts/calibrate.js -m > ./build/lib/browser/client-scripts/calibrate.min.js --support-ie8",
     "test-unit": "mocha test",
-    "test": "npm run lint && npm run test-unit",
+    "pretest": "npm run build",
+    "test": "run-s lint test-unit",
     "toc": "doctoc README.md"
   },
   "engines": {
@@ -43,6 +45,8 @@
     "yallist": "^3.0.3"
   },
   "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1",
+    "@types/node": "^8.10.66",
     "app-module-path": "^1.1.0",
     "chai": "^3.4.1",
     "chai-as-promised": "^5.3.0",
@@ -50,7 +54,9 @@
     "eslint": "^3.1.1",
     "eslint-config-gemini-testing": "^2.2.0",
     "mocha": "^7.1.2",
+    "npm-run-all": "^4.1.5",
     "proxyquire": "^1.7.3",
-    "sinon": "^2.2.0"
+    "sinon": "^2.2.0",
+    "typescript": "^4.5.5"
   }
 }
