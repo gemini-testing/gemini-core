@@ -1,15 +1,17 @@
-'use strict';
+import _ from 'lodash';
+import Bluebird from 'bluebird';
+import EventEmitter from 'events';
+import * as promiseUtils from '../../promise-utils';
 
-const _ = require('lodash');
-const Promise = require('bluebird');
-const EventEmitter = require('events').EventEmitter;
-const promiseUtils = require('../../promise-utils');
+type AnyArgsFunction<R = any> = (...args: Array<any>) => R;
 
-module.exports = class AsyncEmitter extends EventEmitter {
-    emitAndWait(event, ...args) {
-        return _(this.listeners(event))
-            .map((l) => Promise.method(l).apply(this, args))
+export default class AsyncEmitter extends EventEmitter {
+    public emitAndWait(event: string | symbol, ...args: Array<any>): Bluebird<any> {
+        const promises = _(this.listeners(event) as Array<AnyArgsFunction>)
+            .map((l) => (Bluebird.method(l) as AnyArgsFunction<Bluebird<any>>).apply(this, args))
             .thru(promiseUtils.waitForResults)
             .value();
+
+        return Bluebird.all(promises);
     }
 };
