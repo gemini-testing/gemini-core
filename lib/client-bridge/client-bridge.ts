@@ -1,51 +1,54 @@
-'use strict';
+import Bluebird from 'bluebird';
+import { ClientBridgeError } from '../errors';
 
-const Promise = require('bluebird');
-const ClientBridgeError = require('../errors').ClientBridgeError;
+import type { ExistingBrowser } from '../types/existing-browser';
 
-module.exports = class ClientBridge {
-    static create(browser, script) {
+export default class ClientBridge {
+    public static create(browser: ExistingBrowser, script: string): ClientBridge {
         return new ClientBridge(browser, script);
     }
 
-    constructor(browser, script) {
-        this._browser = browser;
-        this._script = script;
-    }
+    constructor(
+        private _browser: ExistingBrowser,
+        private _script: string
+    ) {}
 
-    call(name, args = []) {
+    public async call(name: string, args = []): Promise<any> {
         return this._callCommand(this._clientMethodCommand(name, args), true);
     }
 
-    _callCommand(command, injectAllowed) {
-        return this._browser.evalScript(command)
-            .then((result) => {
-                if (!result || !result.isClientScriptNotInjected) {
-                    return Promise.resolve(result);
-                }
+    private async _callCommand(command: string, injectAllowed: boolean): Promise<any> {
+        const result = await this._browser.evalScript(command);
 
-                if (injectAllowed) {
-                    return this._inject()
-                        .then(() => this._callCommand(command, false));
-                }
+        try {
+            if (!result || !result.isClientScriptNotInjected) {
+                return Bluebird.resolve(result);
+            }
+    
+            if (injectAllowed) {
+                await this._inject();
 
-                return Promise.reject(new ClientBridgeError('Unable to inject gemini-core client script'));
-            })
-            .catch((e) => Promise.reject(new ClientBridgeError(e.message)));
+                return this._callCommand(command, false);
+            }
+    
+            return Bluebird.reject(new ClientBridgeError('Unable to inject gemini-core client script'));
+        } catch (e: unknown) {
+            return Bluebird.reject(new ClientBridgeError((e as Error).message));
+        }
     }
 
-    _clientMethodCommand(name, args) {
-        const params = args.map(JSON.stringify).join(', ');
+    private _clientMethodCommand(name: string, args: Array<any>): string {
+        const params = args.map((arg) => JSON.stringify(arg)).join(', ');
         const call = `__geminiCore.${name}(${params})`;
 
         return this._guardClientCall(call);
     }
 
-    _guardClientCall(call) {
+    private _guardClientCall(call: string): string {
         return `typeof __geminiCore !== "undefined" ? ${call} : {isClientScriptNotInjected: true}`;
     }
 
-    _inject() {
+    private async _inject(): Promise<any> {
         return this._browser.injectScript(this._script);
     }
 };

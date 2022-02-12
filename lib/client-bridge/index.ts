@@ -1,13 +1,20 @@
-'use strict';
+import path from 'path';
+import Bluebird from 'bluebird';
+import browserify from 'browserify';
+import ClientBridge from './client-bridge';
 
-const path = require('path');
-const Promise = require('bluebird');
-const browserify = require('browserify');
-const ClientBridge = require('./client-bridge');
+import type { CalibrationResult } from '../types/calibrator';
+import type { ExistingBrowser } from '../types/existing-browser';
 
-exports.ClientBridge = ClientBridge;
+export { default as ClientBridge } from './client-bridge';
 
-exports.build = (browser, opts = {}) => {
+type BuildClientBridgeOpts = {
+    coverage?: boolean;
+    calibration?: CalibrationResult;
+    supportDeprecated?: boolean;
+};
+
+export const build = async (browser: ExistingBrowser, opts: BuildClientBridgeOpts = {}) => {
     const script = browserify({
         entries: './index',
         basedir: path.join(__dirname, '..', 'browser', 'client-scripts')
@@ -17,29 +24,27 @@ exports.build = (browser, opts = {}) => {
         script.exclude('./index.coverage');
     }
 
-    script.transform({
+    script.transform('uglifyify', {
         sourcemap: false,
         global: true,
         compress: {screw_ie8: false}, // eslint-disable-line camelcase
         mangle: {screw_ie8: false}, // eslint-disable-line camelcase
         output: {screw_ie8: false} // eslint-disable-line camelcase
-    }, 'uglifyify');
+    });
 
     const lib = opts.calibration && opts.calibration.needsCompatLib ? './lib.compat.js' : './lib.native.js';
     const ignoreAreas = opts.supportDeprecated ? './ignore-areas.deprecated.js' : './ignore-areas.js';
 
-    script.transform({
+    script.transform('aliasify', {
         aliases: {
             './lib': {relative: lib},
             './ignore-areas': {relative: ignoreAreas}
         },
         verbose: false
-    }, 'aliasify');
+    });
 
-    return Promise.fromCallback((cb) => script.bundle(cb))
-        .then((buf) => {
-            const scripts = buf.toString();
+    const buf = await Bluebird.fromCallback((cb: (err: any, src: Buffer) => any) => script.bundle(cb));
+    const scripts = buf.toString();
 
-            return ClientBridge.create(browser, scripts);
-        });
+    return ClientBridge.create(browser, scripts);
 };
