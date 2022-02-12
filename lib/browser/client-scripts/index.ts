@@ -1,19 +1,32 @@
 /*jshint browserify:true*/
-'use strict';
+import { queryIgnoreAreas } from './ignore-areas';
+import Rect, { getAbsoluteClientRect } from './rect';
+import * as util from './util';
 
-var util = require('./util'),
-    rect = require('./rect'),
-    lib = require('./lib'),
-    queryIgnoreAreas = require('./ignore-areas'),
-    Rect = rect.Rect;
+import type * as libTyping from './lib.native';
+import type { Page } from '../../types/page';
+import type { SerializedRect } from '../../types/rect';
+
+const lib: typeof libTyping = require('./lib');
 
 if (typeof window === 'undefined') {
+    //@ts-ignore
     global.__geminiCore = exports;
 } else {
+    //@ts-ignore
     window.__geminiCore = exports;
 }
 
-exports.queryFirst = lib.queryFirst;
+export const queryFirst = lib.queryFirst;
+
+type PrepareScreenshotOpts = {
+    ignoreSelectors: Array<string>;
+    allowViewportOverflow?: boolean;
+    captureElementFromTop?: boolean;
+    selectorToScroll?: string;
+    usePixelRatio?: boolean;
+    coverage?: boolean;
+};
 
 // Terminology
 // - clientRect - the result of calling getBoundingClientRect of the element
@@ -21,25 +34,23 @@ exports.queryFirst = lib.queryFirst;
 // - elementCaptureRect - sum of extRects of the element and its pseudo-elements
 // - captureRect - sum of all elementCaptureRect for each captureSelectors
 
-exports.prepareScreenshot = function prepareScreenshot(selectors, opts) {
-    opts = opts || {};
+export function prepareScreenshot(selectors: Array<string>, opts: PrepareScreenshotOpts = { ignoreSelectors: [] }) {
     try {
         return prepareScreenshotUnsafe(selectors, opts);
-    } catch (e) {
+    } catch (e: any) {
         return {
             error: 'JS',
             message: e.stack || e.message
         };
     }
-};
+}
 
-function prepareScreenshotUnsafe(selectors, opts) {
-    var allowViewportOverflow = opts.allowViewportOverflow;
-    var captureElementFromTop = opts.captureElementFromTop;
-    var scrollElem = window;
+function prepareScreenshotUnsafe(selectors: Array<string>, opts: PrepareScreenshotOpts): Page | RectError {
+    const { allowViewportOverflow, captureElementFromTop } = opts;
+    let scrollElem: Element | Window = window;
 
     if (opts.selectorToScroll) {
-        scrollElem = document.querySelector(opts.selectorToScroll);
+        scrollElem = document.querySelector(opts.selectorToScroll) as Element;
 
         if (!scrollElem) {
             return {
@@ -50,16 +61,17 @@ function prepareScreenshotUnsafe(selectors, opts) {
         }
     }
 
-    var rect = getCaptureRect(selectors, {allowViewportOverflow: allowViewportOverflow, scrollElem: scrollElem});
-    if (rect.error) {
+    const rect = getCaptureRect(selectors, {allowViewportOverflow: allowViewportOverflow, scrollElem: scrollElem});
+
+    if (isRectError(rect)) {
         return rect;
     }
-
-    var viewportHeight = document.documentElement.clientHeight,
+    
+    let coverage;
+    const viewportHeight = document.documentElement.clientHeight,
         viewportWidth = document.documentElement.clientWidth,
         documentHeight = document.documentElement.scrollHeight,
         documentWidth = document.documentElement.scrollWidth,
-        coverage,
         viewPort = new Rect({
             left: util.getScrollLeft(scrollElem),
             top: util.getScrollTop(scrollElem),
@@ -104,21 +116,40 @@ function prepareScreenshotUnsafe(selectors, opts) {
     };
 }
 
-exports.resetZoom = function() {
-    var meta = lib.queryFirst('meta[name="viewport"]');
+function isRectError(obj: Rect | RectError): obj is RectError {
+    return Boolean((obj as RectError).error);
+}
+
+export function resetZoom(): void {
+    let meta = lib.queryFirst('meta[name="viewport"]');
     if (!meta) {
         meta = document.createElement('meta');
-        meta.name = 'viewport';
-        var head = lib.queryFirst('head');
+        (meta as any).name = 'viewport';
+        const head = lib.queryFirst('head');
         head && head.appendChild(meta);
     }
-    meta.content = 'width=device-width,initial-scale=1.0,user-scalable=no';
+    (meta as any).content = 'width=device-width,initial-scale=1.0,user-scalable=no';
+}
+
+type RectError = {
+    error: string;
+    message: string;
+    selector?: string | Array<string>;
 };
 
-function getCaptureRect(selectors, opts) {
-    var element, elementRect, rect;
-    for (var i = 0; i < selectors.length; i++) {
-        element = lib.queryFirst(selectors[i]);
+type GetCaptureRectOpts = {
+    allowViewportOverflow?: boolean;
+    scrollElem: Element | Window;
+};
+
+function getCaptureRect(selectors: Array<string>, opts: GetCaptureRectOpts): Rect | RectError {
+    let element: Element | null;
+    let elementRect: Rect | null;
+    let rect: Rect | null = null;
+
+    for (let i = 0; i < selectors.length; i++) {
+        element = lib.queryFirst(selectors[i]) as Element | null;
+
         if (!element) {
             return {
                 error: 'NOTFOUND',
@@ -140,7 +171,7 @@ function getCaptureRect(selectors, opts) {
     };
 }
 
-function configurePixelRatio(usePixelRatio) {
+function configurePixelRatio(usePixelRatio?: boolean): number {
     if (usePixelRatio === false) {
         return 1;
     }
@@ -150,13 +181,14 @@ function configurePixelRatio(usePixelRatio) {
     }
 
     // for ie6-ie10 (https://developer.mozilla.org/ru/docs/Web/API/Window/devicePixelRatio)
+    //@ts-expect-error
     return window.screen.deviceXDPI / window.screen.logicalXDPI || 1;
 }
 
-function findIgnoreAreas(selectors, scrollElem) {
-    var result = [];
+function findIgnoreAreas(selectors: Array<string>, scrollElem: Element | Window) {
+    const result: Array<SerializedRect> = [];
     util.each(selectors, function(selector) {
-        var elements = queryIgnoreAreas(selector);
+        const elements = queryIgnoreAreas(selector) as Array<Element>;
 
         util.each(elements, function(elem) {
             return addIgnoreArea.call(result, elem, scrollElem);
@@ -166,29 +198,29 @@ function findIgnoreAreas(selectors, scrollElem) {
     return result;
 }
 
-function addIgnoreArea(element, scrollElem) {
-    var rect = element && getElementCaptureRect(element, {scrollElem: scrollElem});
+function addIgnoreArea(this: Array<SerializedRect>, element: Element | null, scrollElem: Element | Window) {
+    const rect = element && getElementCaptureRect(element, {scrollElem: scrollElem});
     rect && this.push(rect.round().serialize());
 }
 
-function isHidden(css, clientRect) {
+function isHidden(css: CSSStyleDeclaration, clientRect: Rect): boolean {
     return css.display === 'none' ||
         css.visibility === 'hidden' ||
-        css.opacity < 0.0001 ||
+        +css.opacity < 0.0001 ||
         clientRect.width < 0.0001 ||
         clientRect.height < 0.0001;
 }
 
-function getElementCaptureRect(element, opts) {
-    var pseudo = [':before', ':after'],
-        css = lib.getComputedStyle(element),
-        clientRect = rect.getAbsoluteClientRect(element, opts.scrollElem);
+function getElementCaptureRect(element: Element, opts: GetCaptureRectOpts): Rect | null {
+    const pseudo = [':before', ':after'];
+    let css = lib.getComputedStyle(element);
+    const clientRect = getAbsoluteClientRect(element, opts.scrollElem);
 
     if (isHidden(css, clientRect)) {
         return null;
     }
 
-    var elementRect = getExtRect(css, clientRect, opts.allowViewportOverflow);
+    let elementRect = getExtRect(css, clientRect, opts.allowViewportOverflow);
 
     util.each(pseudo, function(pseudoEl) {
         css = lib.getComputedStyle(element, pseudoEl);
@@ -198,9 +230,9 @@ function getElementCaptureRect(element, opts) {
     return elementRect;
 }
 
-function getExtRect(css, clientRect, allowViewportOverflow) {
-    var shadows = parseBoxShadow(css.boxShadow),
-        outline = parseInt(css.outlineWidth, 10);
+function getExtRect(css: CSSStyleDeclaration, clientRect: Rect, allowViewportOverflow?: boolean): Rect {
+    const shadows = parseBoxShadow(css.boxShadow);
+    let outline = parseInt(css.outlineWidth, 10);
 
     if (isNaN(outline)) {
         outline = 0;
@@ -209,12 +241,20 @@ function getExtRect(css, clientRect, allowViewportOverflow) {
     return adjustRect(clientRect, shadows, outline, allowViewportOverflow);
 }
 
-function parseBoxShadow(value) {
-    value = value || '';
-    var regex = /[-+]?\d*\.?\d+px/g,
-        values = value.split(','),
-        results = [],
-        match;
+type BoxShadow = {
+    offsetX: number;
+    offsetY: number;
+    blurRadius: number;
+    spreadRadius: number;
+    inset: boolean;
+};
+
+function parseBoxShadow(value: string = ''): Array<BoxShadow> {
+    const regex = /[-+]?\d*\.?\d+px/g;
+    const values = value.split(',');
+    const results: Array<BoxShadow> = [];
+
+    let match: RegExpMatchArray | null;
 
     util.each(values, function(value) {
         if ((match = value.match(regex))) {
@@ -227,18 +267,20 @@ function parseBoxShadow(value) {
             });
         }
     });
+
     return results;
 }
 
-function adjustRect(rect, shadows, outline, allowViewportOverflow) {
-    var shadowRect = calculateShadowRect(rect, shadows, allowViewportOverflow),
-        outlineRect = calculateOutlineRect(rect, outline, allowViewportOverflow);
+function adjustRect(rect: Rect, shadows: Array<BoxShadow>, outline: number, allowViewportOverflow?: boolean): Rect {
+    const shadowRect = calculateShadowRect(rect, shadows, allowViewportOverflow);
+    const outlineRect = calculateOutlineRect(rect, outline, allowViewportOverflow);
+
     return shadowRect.merge(outlineRect);
 }
 
-function calculateOutlineRect(rect, outline, allowViewportOverflow) {
-    var top = rect.top - outline,
-        left = rect.left - outline;
+function calculateOutlineRect(rect: Rect, outline: number, allowViewportOverflow?: boolean): Rect {
+    const top = rect.top - outline;
+    const left = rect.left - outline;
 
     return new Rect({
         top: allowViewportOverflow ? top : Math.max(0, top),
@@ -248,10 +290,10 @@ function calculateOutlineRect(rect, outline, allowViewportOverflow) {
     });
 }
 
-function calculateShadowRect(rect, shadows, allowViewportOverflow) {
-    var extent = calculateShadowExtent(shadows),
-        left = rect.left + extent.left,
-        top = rect.top + extent.top;
+function calculateShadowRect(rect: Rect, shadows: Array<BoxShadow>, allowViewportOverflow?: boolean): Rect {
+    const extent = calculateShadowExtent(shadows);
+    const left = rect.left + extent.left;
+    const top = rect.top + extent.top;
 
     return new Rect({
         left: allowViewportOverflow ? left : Math.max(0, left),
@@ -261,8 +303,8 @@ function calculateShadowRect(rect, shadows, allowViewportOverflow) {
     });
 }
 
-function calculateShadowExtent(shadows) {
-    var result = {top: 0, left: 0, right: 0, bottom: 0};
+function calculateShadowExtent(shadows: Array<BoxShadow>) {
+    const result = {top: 0, left: 0, right: 0, bottom: 0};
 
     util.each(shadows, function(shadow) {
         if (shadow.inset) {
@@ -270,27 +312,30 @@ function calculateShadowExtent(shadows) {
             return;
         }
 
-        var blurAndSpread = shadow.spreadRadius + shadow.blurRadius;
+        const blurAndSpread = shadow.spreadRadius + shadow.blurRadius;
+
         result.left = Math.min(shadow.offsetX - blurAndSpread, result.left);
         result.right = Math.max(shadow.offsetX + blurAndSpread, result.right);
         result.top = Math.min(shadow.offsetY - blurAndSpread, result.top);
         result.bottom = Math.max(shadow.offsetY + blurAndSpread, result.bottom);
     });
+
     return result;
 }
 
-function isEditable(element) {
+function isEditable(element: Element | null): boolean {
     if (!element) {
         return false;
     }
+
     return /^(input|textarea)$/i.test(element.tagName) ||
-        element.isContentEditable;
+        (element as HTMLElement).isContentEditable;
 }
 
-function scrollToCaptureAreaInSafari(viewportCurr, captureArea, scrollElem) {
-    var documentHeight = Math.round(document.documentElement.scrollHeight);
-    var viewportHeight = Math.round(document.documentElement.clientHeight);
-    var maxScrollByY = documentHeight - viewportHeight;
+function scrollToCaptureAreaInSafari(viewportCurr: Rect, captureArea: Rect, scrollElem: Element | Window): void {
+    const documentHeight = Math.round(document.documentElement.scrollHeight);
+    const viewportHeight = Math.round(document.documentElement.clientHeight);
+    const maxScrollByY = documentHeight - viewportHeight;
 
     scrollElem.scrollTo(viewportCurr.left, Math.min(captureArea.top, maxScrollByY));
 
@@ -302,7 +347,6 @@ function scrollToCaptureAreaInSafari(viewportCurr, captureArea, scrollElem) {
         width: viewportCurr.width,
         height: viewportCurr.height
     });
-
     if (!viewportAfterScroll.rectInside(captureArea)) {
         scrollElem.scrollTo(captureArea.left, captureArea.top);
     }

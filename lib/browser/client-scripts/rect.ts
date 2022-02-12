@@ -1,108 +1,125 @@
-'use strict';
+import * as util from './util';
 
-var util = require('./util');
+import type { SerializedRect } from '../../types/rect';
 
-function Rect(data) {
-    this.top = data.top;
-    this.left = data.left;
+type RectConstructor = {
+    top: number;
+    left: number;
+    right?: number;
+    bottom?: number;
+    width?: number;
+    height?: number;
+};
 
-    if ('width' in data && 'height' in data) {
-        this.width = data.width;
-        this.height = data.height;
-        this.bottom = data.bottom || this.top + this.height;
-        this.right = data.right || this.left + this.width;
-    } else if ('bottom' in data && 'right' in data) {
-        this.bottom = data.bottom;
-        this.right = data.right;
-        this.width = data.right - Math.max(0, data.left);
-        this.height = data.bottom - Math.max(0, data.top);
-    } else {
-        throw new Error('Not enough data for the rect construction');
-    }
+function hasWidthAndHeight<T>(data: T): data is T & Record<'width'|'height', number> {
+    return 'width' in data && 'height' in data;
 }
 
-Rect.prototype = {
-    constructor: Rect,
-    merge: function(otherRect) {
+function hasRightAndBottom<T>(data: T): data is T & Record<'right'|'bottom', number> {
+    return 'right' in data && 'bottom' in data;
+}
+
+export default class Rect {
+    public top: number;
+    public left: number;
+    public right: number;
+    public bottom: number;
+    public width: number;
+    public height: number;
+
+    constructor(data: RectConstructor) {
+        this.top = data.top;
+        this.left = data.left;
+
+        if (hasWidthAndHeight(data)) {
+            this.width = data.width;
+            this.height = data.height;
+            this.right = data.right || this.left + this.width;
+            this.bottom = data.bottom || this.top + this.height;
+        } else if (hasRightAndBottom(data)) {
+            this.right = data.right;
+            this.bottom = data.bottom;
+            this.width = data.right - Math.max(0, data.left);
+            this.height = data.bottom - Math.max(0, data.top);
+        } else {
+            throw new Error('Not enough data for the rect construction');
+        }
+    }
+
+    public merge(otherRect: Rect): Rect {
         return new Rect({
             left: Math.min(this.left, otherRect.left),
             top: Math.min(this.top, otherRect.top),
             bottom: Math.max(this.bottom, otherRect.bottom),
             right: Math.max(this.right, otherRect.right)
         });
-    },
+    }
 
-    translate: function(x, y) {
+    public translate(x: number, y: number): Rect {
         return new Rect({
             top: this.top + y,
             left: this.left + x,
             width: this.width,
             height: this.height
         });
-    },
+    }
 
-    pointInside: function(x, y) {
+    public pointInside(x: number, y: number): boolean {
         return x >= this.left && x <= this.right &&
             y >= this.top && y <= this.bottom;
-    },
+    }
 
-    rectInside: function(rect) {
-        return util.every(rect._keyPoints(), function(point) {
+    public rectInside(rect: Rect): boolean {
+        return util.every(rect._keyPoints(), function(point: [number, number]) {
             return this.pointInside(point[0], point[1]);
         }, this);
-    },
+    }
 
-    rectIntersects: function(other) {
-        var isOtherOutside = other.right <= this.left || other.bottom <= this.top || other.left >= this.right || other.top >= this.bottom;
+    public rectIntersects(other: Rect): boolean {
+        const isOtherOutside = other.right <= this.left || other.bottom <= this.top || other.left >= this.right || other.top >= this.bottom;
 
         return !isOtherOutside;
-    },
+    }
 
-    round: function() {
+    public round(): Rect {
         return new Rect({
             top: Math.floor(this.top),
             left: Math.floor(this.left),
             right: Math.ceil(this.right),
             bottom: Math.ceil(this.bottom)
         });
-    },
+    }
 
-    serialize: function() {
+    public serialize(): SerializedRect {
         return {
             top: this.top,
             left: this.left,
             width: this.width,
             height: this.height
         };
-    },
+    }
 
-    overflowsTopBound: function(rect) {
+    public overflowsTopBound(rect: Rect): boolean {
         return this._overflowsBound(rect, 'top');
-    },
+    }
 
-    overflowsLeftBound: function(rect) {
+    public overflowsLeftBound(rect: Rect): boolean {
         return this._overflowsBound(rect, 'left');
-    },
+    }
 
-    recalculateHeight: function(rect) {
+    public recalculateHeight(rect: Rect): void {
         this.height = this.height - (rect.top - Math.max(0, this.top));
-    },
+    }
 
-    recalculateWidth: function(rect) {
+    public recalculateWidth(rect: Rect): void {
         this.width = this.width - (rect.left - Math.max(0, this.left));
-    },
+    }
 
-    _overflowsBound: function(rect, prop) {
+    private _overflowsBound(rect: Rect, prop: keyof SerializedRect): boolean {
         return Math.max(0, this[prop]) < rect[prop];
-    },
+    }
 
-    _anyPointInside: function(points) {
-        return util.some(points, function(point) {
-            return this.pointInside(point[0], point[1]);
-        }, this);
-    },
-
-    _keyPoints: function() {
+    private _keyPoints(): Array<[number, number]> {
         return [
             [this.left, this.top],
             [this.left, this.bottom],
@@ -110,10 +127,9 @@ Rect.prototype = {
             [this.right, this.bottom]
         ];
     }
-};
+}
 
-exports.Rect = Rect;
-exports.getAbsoluteClientRect = function getAbsoluteClientRect(element, scrollElem) {
-    var clientRect = new Rect(element.getBoundingClientRect());
+export function getAbsoluteClientRect(element: Element, scrollElem?: Element | Window): Rect {
+    const clientRect = new Rect(element.getBoundingClientRect());
     return clientRect.translate(util.getScrollLeft(scrollElem), util.getScrollTop(scrollElem));
-};
+}

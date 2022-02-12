@@ -6,7 +6,9 @@
   "bugs": "https://github.com/gemini-testing/gemini-core/issues",
   "scripts": {
     "lint": "eslint .",
-    "build": "tsc -p tsconfig.json",
+    "build-core": "tsc -p tsconfig.json",
+    "build-client": "tsc -p ./lib/browser/client-scripts/tsconfig.json",
+    "build": "run-s build-core build-client",
     "postbuild": "npm run prepare-calibrate-script",
     "prepare-calibrate-script": "uglifyjs ./build/lib/browser/client-scripts/calibrate.js -m > ./build/lib/browser/client-scripts/calibrate.min.js --support-ie8",
     "test-unit": "mocha test",
@@ -53,6 +55,7 @@
     "@types/lodash": "^4.14.178",
     "@types/micromatch": "^4.0.2",
     "@types/node": "^8.10.66",
+    "@types/sizzle": "^2.3.3",
     "@types/temp": "^0.9.1",
     "@types/webdriverio": "^5.0.0",
     "@types/yallist": "^4.0.1",
