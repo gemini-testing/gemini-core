@@ -1,6 +1,6 @@
 'use strict';
 
-const level = require('lib/coverage/coverage-level');
+const level = require('build/lib/coverage/coverage-level');
 
 describe('coverage level', () => {
     describe('merge', () => {

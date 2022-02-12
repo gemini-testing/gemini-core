@@ -1,7 +1,7 @@
 'use strict';
 
-const BasicPool = require('lib/browser-pool/basic-pool');
-const CancelledError = require('lib/errors/cancelled-error');
+const BasicPool = require('build/lib/browser-pool/basic-pool');
+const CancelledError = require('build/lib/errors/cancelled-error');
 const stubBrowser = require('./util').stubBrowser;
 const _ = require('lodash');
 const Promise = require('bluebird');

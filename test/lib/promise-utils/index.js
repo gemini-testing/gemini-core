@@ -1,7 +1,7 @@
 'use strict';
 
 const Promise = require('bluebird');
-const utils = require('lib/promise-utils');
+const utils = require('build/lib/promise-utils');
 
 describe('promise-utils', () => {
     describe('waitForResults', () => {

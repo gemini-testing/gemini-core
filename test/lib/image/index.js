@@ -5,10 +5,10 @@ const utils = require('png-img/utils');
 const proxyquire = require('proxyquire');
 
 const looksSameStub = sinon.stub();
-const Image = proxyquire('lib/image', {
+const Image = proxyquire('build/lib/image', {
     'looks-same': looksSameStub
 });
-const SafeRect = require('lib/image/safe-rect');
+const SafeRect = require('build/lib/image/safe-rect');
 
 describe('Image', () => {
     const sandbox = sinon.sandbox.create();

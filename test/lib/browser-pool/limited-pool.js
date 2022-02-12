@@ -1,8 +1,8 @@
 'use strict';
 
 const Promise = require('bluebird');
-const LimitedPool = require('lib/browser-pool/limited-pool');
-const CancelledError = require('lib/errors/cancelled-error');
+const LimitedPool = require('build/lib/browser-pool/limited-pool');
+const CancelledError = require('build/lib/errors/cancelled-error');
 const stubBrowser = require('./util').stubBrowser;
 
 describe('browser-pool/limited-pool', () => {

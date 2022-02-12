@@ -1,7 +1,7 @@
 'use strict';
 
 const proxyquire = require('proxyquire');
-const ClientBridge = require('lib/client-bridge/client-bridge');
+const ClientBridge = require('build/lib/client-bridge/client-bridge');
 
 describe('clientBridge', () => {
     const sandbox = sinon.sandbox.create();
@@ -17,7 +17,7 @@ describe('clientBridge', () => {
 
         browserify = sandbox.stub().returns(script);
 
-        clientBridge = proxyquire('lib/client-bridge', {browserify});
+        clientBridge = proxyquire('build/lib/client-bridge', {browserify});
 
         sandbox.stub(ClientBridge, 'create');
     });

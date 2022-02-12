@@ -1,8 +1,8 @@
 'use strict';
 
 const Promise = require('bluebird');
-const BrowserAgent = require('lib/browser-agent');
-const BasicPool = require('lib/browser-pool/basic-pool');
+const BrowserAgent = require('build/lib/browser-agent');
+const BasicPool = require('build/lib/browser-pool/basic-pool');
 
 describe('browser-agent', () => {
     const sandbox = sinon.sandbox.create();

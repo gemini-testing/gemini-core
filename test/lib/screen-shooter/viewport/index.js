@@ -3,9 +3,9 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 
-const Image = require('lib/image');
-const Viewport = require('lib/screen-shooter/viewport');
-const CoordValidator = require('lib/screen-shooter/viewport/coord-validator');
+const Image = require('build/lib/image');
+const Viewport = require('build/lib/screen-shooter/viewport');
+const CoordValidator = require('build/lib/screen-shooter/viewport/coord-validator');
 
 describe('Viewport', () => {
     const sandbox = sinon.sandbox.create();

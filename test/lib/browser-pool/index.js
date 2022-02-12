@@ -1,9 +1,9 @@
 'use strict';
 
-const BasicPool = require('lib/browser-pool/basic-pool');
-const LimitedPool = require('lib/browser-pool/limited-pool');
-const PerBrowserLimitedPool = require('lib/browser-pool/per-browser-limited-pool');
-const pool = require('lib/browser-pool');
+const BasicPool = require('build/lib/browser-pool/basic-pool');
+const LimitedPool = require('build/lib/browser-pool/limited-pool');
+const PerBrowserLimitedPool = require('build/lib/browser-pool/per-browser-limited-pool');
+const pool = require('build/lib/browser-pool');
 const _ = require('lodash');
 
 describe('browser-pool', () => {

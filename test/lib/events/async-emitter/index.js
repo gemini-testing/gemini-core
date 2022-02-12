@@ -1,6 +1,6 @@
 'use strict';
 
-const AsyncEmitter = require('lib/events/async-emitter');
+const AsyncEmitter = require('build/lib/events/async-emitter');
 const Promise = require('bluebird');
 
 describe('async-emitter', () => {
