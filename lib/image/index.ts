@@ -1,21 +1,42 @@
-'use strict';
+import Bluebird from 'bluebird';
+import looksSame from 'looks-same';
+import PngImg, { Size, Color } from 'png-img';
+import * as utils from 'png-img/utils';
 
-const Promise = require('bluebird');
-const looksSame = require('looks-same');
-const PngImg = require('png-img');
-const utils = require('png-img/utils');
-const SafeRect = require('./safe-rect');
+import SafeRect from './safe-rect';
 
-module.exports = class Image {
-    static create(buffer) {
+import type { SerializedRect } from '../types/rect';
+
+type ImageCompareOpts = {
+    canHaveCaret?: boolean;
+    pixelRatio?: number;
+    compareOpts?: looksSame.LooksSameOptions;
+    tolerance?: number;
+    antialiasingTolerance?: number;
+};
+
+type ImageBuildDiffOpts = Omit<looksSame.CreateDiffOptions, 'highlightColor'> & {
+    diffColor: string;
+};
+
+type LooksSameResult = Parameters<Parameters<typeof looksSame>[2]>[1];
+
+type ScaleOpts = {
+    scaleFactor?: number;
+};
+
+export default class Image {
+    private _img: PngImg;
+
+    public static create(buffer: Buffer): Image {
         return new this(buffer);
     }
 
-    constructor(buffer) {
+    constructor(buffer: Buffer) {
         this._img = new PngImg(buffer);
     }
 
-    crop(rect, opts = {}) {
+    public crop(rect: SerializedRect, opts: ScaleOpts = {}): Promise<this> {
         rect = this._scale(rect, (opts).scaleFactor);
         const imageSize = this.getSize();
         const safeRect = SafeRect.create(rect, imageSize);
@@ -27,22 +48,22 @@ module.exports = class Image {
             safeRect.height
         );
 
-        return Promise.resolve(this);
+        return Bluebird.resolve(this);
     }
 
-    getSize() {
+    public getSize(): Size {
         return this._img.size();
     }
 
-    getRGBA(x, y) {
+    public getRGBA(x: number, y: number): Color {
         return this._img.get(x, y);
     }
 
-    save(file) {
-        return Promise.fromCallback((cb) => this._img.save(file, cb));
+    public save(file: string): Promise<void> {
+        return Bluebird.fromCallback((cb) => this._img.save(file, cb));
     }
 
-    clear(area, opts = {}) {
+    public clear(area: SerializedRect, opts: ScaleOpts = {}): void {
         area = this._scale(area, (opts).scaleFactor);
         this._img.fill(
             area.left,
@@ -53,7 +74,7 @@ module.exports = class Image {
         );
     }
 
-    join(newImage) {
+    public join(newImage: Image): this {
         const imageSize = this.getSize();
         this._img
             .setSize(imageSize.width, imageSize.height + newImage.getSize().height)
@@ -62,9 +83,8 @@ module.exports = class Image {
         return this;
     }
 
-    _scale(area, scaleFactor) {
+    private _scale(area: SerializedRect, scaleFactor?: number): SerializedRect {
         scaleFactor = scaleFactor || 1;
-
         return {
             left: area.left * scaleFactor,
             top: area.top * scaleFactor,
@@ -73,34 +93,36 @@ module.exports = class Image {
         };
     }
 
-    static fromBase64(base64) {
-        return new Image(new Buffer(base64, 'base64'));
+    public static fromBase64(base64: string): Image {
+        return new Image(Buffer.from(base64, 'base64'));
     }
 
-    static RGBToString(rgb) {
+    public static RGBToString(rgb: Color): string {
         return utils.RGBToString(rgb);
     }
 
-    static compare(path1, path2, opts = {}) {
+    public static compare(path1: string, path2: string, opts: ImageCompareOpts = {}): Promise<LooksSameResult> {
         const compareOptions = {
             ignoreCaret: opts.canHaveCaret,
             pixelRatio: opts.pixelRatio,
             ...opts.compareOpts
         };
-        ['tolerance', 'antialiasingTolerance'].forEach((option) => {
+
+        (['tolerance', 'antialiasingTolerance'] as const).forEach((option) => {
             if (option in opts) {
                 compareOptions[option] = opts[option];
             }
         });
-        return Promise.fromCallback((cb) => {
+
+        return Bluebird.fromCallback((cb) => {
             looksSame(path1, path2, compareOptions, cb);
         });
     }
 
-    static buildDiff(opts) {
+    public static buildDiff(opts: ImageBuildDiffOpts): Promise<Buffer> {
         const {diffColor: highlightColor, ...otherOpts} = opts;
         const diffOptions = {highlightColor, ...otherOpts};
 
-        return Promise.fromCallback((cb) => looksSame.createDiff(diffOptions, cb));
+        return Bluebird.fromCallback((cb) => looksSame.createDiff(diffOptions, cb));
     }
 };
