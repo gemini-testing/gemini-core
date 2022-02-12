@@ -1,11 +1,8 @@
-'use strict';
+import Bluebird from 'bluebird';
 
-const Promise = require('bluebird');
+export async function waitForResults(promises: Array<Bluebird<any>>): Promise<Array<any>> {
+    const res = await Bluebird.all(promises.map((p) => p.reflect()));
+    const firstRejection = res.find((v) => v.isRejected());
 
-exports.waitForResults = (promises) => {
-    return Promise.all(promises.map((p) => p.reflect()))
-        .then((res) => {
-            const firstRejection = res.find((v) => v.isRejected());
-            return firstRejection ? Promise.reject(firstRejection.reason()) : res.map((r) => r.value());
-        });
-};
+    return firstRejection ? Bluebird.reject(firstRejection.reason()) : res.map((r) => r.value());
+}
