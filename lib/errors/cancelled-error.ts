@@ -1,6 +1,4 @@
-'use strict';
-
-module.exports = class CancelledError extends Error {
+export default class CancelledError extends Error {
     constructor() {
         super();
 
