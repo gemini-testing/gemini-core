@@ -1,26 +1,43 @@
-'use strict';
+import Bluebird from 'bluebird';
+import debug from 'debug';
+import _ from 'lodash';
+import yallist from 'yallist';
 
-const _ = require('lodash');
-const Promise = require('bluebird');
-const yallist = require('yallist');
-const Pool = require('./pool');
-const CancelledError = require('../errors/cancelled-error');
-const debug = require('debug');
-const {buildCompositeBrowserId} = require('./utils');
+import { buildCompositeBrowserId } from './utils';
+import CancelledError from '../errors/cancelled-error';
 
-module.exports = class LimitedPool extends Pool {
-    static create(underlyingPool, opts) {
+import type { Pool } from '../types/pool';
+import type { NewBrowser } from '../types/new-browser';
+
+type LimitedPoolOpts = {
+    logNamespace?: string;
+    limit: number;
+    isSpecificBrowserLimiter?: boolean;
+};
+
+type Request = {
+    id: string;
+    version: string;
+    resolve: (browser: NewBrowser) => void;
+    reject: (err: any) => void;
+};
+
+export default class LimitedPool implements Pool {
+    public log: debug.Debugger;
+    public underlyingPool: Pool;
+    private _limit: number;
+    private _launched: number;
+    private _requests: number;
+    private _requestQueue: yallist<Request>;
+    private _highPriorityRequestQueue: yallist<Request>;
+    private _isSpecificBrowserLimiter: boolean;
+
+
+    public static create(underlyingPool: Pool, opts: LimitedPoolOpts): LimitedPool {
         return new LimitedPool(underlyingPool, opts);
     }
 
-    /**
-     * @extends BasicPool
-     * @param {Number} limit
-     * @param {BasicPool} underlyingPool
-     */
-    constructor(underlyingPool, opts) {
-        super();
-
+    constructor(underlyingPool: Pool, opts: LimitedPoolOpts) {
         this.log = debug(`${opts.logNamespace}:pool:limited`);
 
         this.underlyingPool = underlyingPool;
@@ -34,19 +51,22 @@ module.exports = class LimitedPool extends Pool {
             : true;
     }
 
-    getBrowser(id, opts = {}) {
+    public getBrowser(id: string, opts = {}): Bluebird<NewBrowser> {
         const optsToPrint = JSON.stringify(opts);
+
         this.log(`get browser ${id} with opts:${optsToPrint} (launched ${this._launched}, limit ${this._limit})`);
 
         ++this._requests;
+
         return this._getBrowser(id, opts)
-            .catch((e) => {
+            .catch(e => {
                 --this._requests;
-                return Promise.reject(e);
+
+                return Bluebird.reject(e);
             });
     }
 
-    freeBrowser(browser, opts = {}) {
+    public freeBrowser(browser: NewBrowser, opts: any = {}): Bluebird<void> {
         --this._requests;
 
         const nextRequest = this._lookAtNextRequest();
@@ -63,10 +83,10 @@ module.exports = class LimitedPool extends Pool {
             .finally(() => this._launchNextBrowser());
     }
 
-    cancel() {
+    public cancel(): void {
         this.log('cancel');
 
-        const reject_ = (entry) => entry.reject(new CancelledError());
+        const reject_ = (entry: Request) => entry.reject(new CancelledError());
         this._highPriorityRequestQueue.forEach(reject_);
         this._requestQueue.forEach(reject_);
 
@@ -76,10 +96,11 @@ module.exports = class LimitedPool extends Pool {
         this.underlyingPool.cancel();
     }
 
-    _getBrowser(id, opts = {}) {
+    private _getBrowser(id: string, opts: any = {}): Bluebird<NewBrowser> {
         if (this._launched < this._limit) {
             this.log('can launch one more');
             this._launched++;
+
             return this._newBrowser(id, opts);
         }
 
@@ -88,30 +109,27 @@ module.exports = class LimitedPool extends Pool {
         const queue = opts.highPriority ? this._highPriorityRequestQueue : this._requestQueue;
         const {version} = opts;
 
-        return new Promise((resolve, reject) => {
+        return new Bluebird((resolve, reject) => {
             queue.push({id, version, resolve, reject});
         });
     }
 
-    /**
-     * @param {String} id
-     * @returns {Promise<Browser>}
-     */
-    _newBrowser(id, opts) {
+    private _newBrowser(id: string, opts: any): Bluebird<NewBrowser> {
         this.log(`launching new browser ${id} with opts:${JSON.stringify(opts)}`);
 
         return this.underlyingPool.getBrowser(id, opts)
             .catch((e) => {
                 this._launchNextBrowser();
-                return Promise.reject(e);
+
+                return Bluebird.reject(e);
             });
     }
 
-    _lookAtNextRequest() {
+    private _lookAtNextRequest(): Request | undefined {
         return this._highPriorityRequestQueue.get(0) || this._requestQueue.get(0);
     }
 
-    _launchNextBrowser() {
+    private _launchNextBrowser(): void {
         const queued = this._highPriorityRequestQueue.shift() || this._requestQueue.shift();
 
         if (queued) {
@@ -125,4 +143,4 @@ module.exports = class LimitedPool extends Pool {
             this._launched--;
         }
     }
-};
+}

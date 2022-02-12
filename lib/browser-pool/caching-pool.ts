@@ -1,20 +1,25 @@
-'use strict';
+import Bluebird from 'bluebird';
+import debug from 'debug';
 
-const Promise = require('bluebird');
-const Pool = require('./pool');
-const LimitedUseSet = require('./limited-use-set');
-const debug = require('debug');
-const {buildCompositeBrowserId} = require('./utils');
+import LimitedUseSet from './limited-use-set';
+import { buildCompositeBrowserId } from './utils';
 
-module.exports = class CachingPool extends Pool {
-    /**
-     * @constructor
-     * @extends BasicPool
-     * @param {BasicPool} underlyingPool
-     */
-    constructor(underlyingPool, config, opts) {
-        super();
+import type { Pool } from '../types/pool';
+import type { NewBrowser } from '../types/new-browser';
+import type { Config } from '../types/config';
 
+type CachingPoolOpts = {
+    logNamespace?: string;
+};
+
+export default class CachingPool implements Pool {
+    public log: debug.Debugger;
+    public underlyingPool: Pool;
+    private _caches: Record<string, LimitedUseSet<NewBrowser>>;
+    private _config: Config;
+    private _logNamespace?: string;
+
+    constructor(underlyingPool: Pool, config: Config, opts: CachingPoolOpts) {
         this.log = debug(`${opts.logNamespace}:pool:caching`);
         this.underlyingPool = underlyingPool;
         this._caches = {};
@@ -22,7 +27,7 @@ module.exports = class CachingPool extends Pool {
         this._logNamespace = opts.logNamespace;
     }
 
-    _getCacheFor(id, version) {
+    private _getCacheFor(id: string, version: string): LimitedUseSet<NewBrowser> {
         const compositeId = buildCompositeBrowserId(id, version);
 
         this.log(`request for ${compositeId}`);
@@ -35,7 +40,7 @@ module.exports = class CachingPool extends Pool {
         return this._caches[compositeId];
     }
 
-    getBrowser(id, opts = {}) {
+    public getBrowser(id: string, opts: any = {}): Bluebird<NewBrowser> {
         const {version} = opts;
         const cache = this._getCacheFor(id, version);
         const browser = cache.pop();
@@ -49,15 +54,16 @@ module.exports = class CachingPool extends Pool {
         this.log(`has cached browser ${browser.fullId}`);
 
         return browser.reset()
-            .catch((e) => {
-                const reject = Promise.reject.bind(null, e);
+            .catch((e: unknown) => {
+                const reject = Bluebird.reject.bind(null, e);
+
                 return this.underlyingPool.freeBrowser(browser)
                     .then(reject, reject);
             })
             .then(() => browser);
     }
 
-    _initPool(browserId, version) {
+    private _initPool(browserId: string, version: string): void {
         const compositeId = buildCompositeBrowserId(browserId, version);
         const freeBrowser = this.underlyingPool.freeBrowser.bind(this.underlyingPool);
         const browserConfig = this._config.forBrowser(browserId);
@@ -79,9 +85,9 @@ module.exports = class CachingPool extends Pool {
      * @param {Object} [options] - advanced options
      * @param {Boolean} [options.force] - if `true` than browser should
      * not be cached
-     * @returns {Promise<undefined>}
+     * @returns {Bluebird<undefined>}
      */
-    freeBrowser(browser, options = {}) {
+    public freeBrowser(browser: NewBrowser, options: any = {}): Bluebird<void> {
         const shouldFreeForNextRequest = () => {
             const {compositeIdForNextRequest} = options;
 
@@ -107,8 +113,8 @@ module.exports = class CachingPool extends Pool {
         return cache.push(browser);
     }
 
-    cancel() {
+    public cancel(): void {
         this.log('cancel');
         this.underlyingPool.cancel();
     }
-};
+}
