@@ -1,31 +1,34 @@
-'use strict';
+import _ from 'lodash';
 
-const _ = require('lodash');
+import type { Pool } from '../types/pool';
+import type { NewBrowser } from '../types/new-browser';
 
-module.exports = class BrowserAgent {
-    static create(browserId, pool) {
+export default class BrowserAgent {
+    private _sessions: Array<string>;
+
+    public static create(browserId: string, pool: Pool): BrowserAgent {
         return new BrowserAgent(browserId, pool);
     }
 
-    constructor(browserId, pool) {
-        this.browserId = browserId;
-        this._pool = pool;
+    constructor(public browserId: string, private _pool: Pool) {
         this._sessions = [];
     }
 
-    getBrowser(opts) {
-        return this._pool.getBrowser(this.browserId, opts)
-            .then((browser) => {
-                if (_.includes(this._sessions, browser.sessionId)) {
-                    return this.freeBrowser(browser, {force: true}).then(() => this.getBrowser(opts));
-                }
+    public async getBrowser(opts: any): Promise<NewBrowser> {
+        const browser = await this._pool.getBrowser(this.browserId, opts);
+        
+        if (_.includes(this._sessions, browser.sessionId)) {
+            await this.freeBrowser(browser, {force: true});
 
-                this._sessions.push(browser.sessionId);
-                return browser;
-            });
+            return this.getBrowser(opts);
+        }
+
+        this._sessions.push(browser.sessionId);
+
+        return browser;
     }
 
-    freeBrowser(browser, opts) {
+    public async freeBrowser(browser: NewBrowser, opts: any): Promise<void> {
         return this._pool.freeBrowser(browser, opts);
     }
-};
+}
