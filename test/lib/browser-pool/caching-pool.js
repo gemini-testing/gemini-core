@@ -1,8 +1,8 @@
 'use strict';
 
 const Promise = require('bluebird');
-const Pool = require('lib/browser-pool/caching-pool');
-const {buildCompositeBrowserId} = require('lib/browser-pool/utils');
+const Pool = require('build/lib/browser-pool/caching-pool').default;
+const {buildCompositeBrowserId} = require('build/lib/browser-pool/utils');
 const stubBrowser = require('./util').stubBrowser;
 
 describe('browser-pool/caching-pool', () => {

@@ -1,7 +1,7 @@
 'use strict';
 
 const proxyquire = require('proxyquire');
-const ClientBridge = require('lib/client-bridge/client-bridge');
+const ClientBridge = require('build/lib/client-bridge/client-bridge').default;
 
 describe('clientBridge', () => {
     const sandbox = sinon.sandbox.create();
@@ -17,7 +17,7 @@ describe('clientBridge', () => {
 
         browserify = sandbox.stub().returns(script);
 
-        clientBridge = proxyquire('lib/client-bridge', {browserify});
+        clientBridge = proxyquire('build/lib/client-bridge', {browserify});
 
         sandbox.stub(ClientBridge, 'create');
     });
@@ -43,13 +43,13 @@ describe('clientBridge', () => {
         it('should transform client scripts', () => {
             return clientBridge.build()
                 .then(() => {
-                    assert.calledWith(script.transform, {
+                    assert.calledWith(script.transform, 'uglifyify', {
                         sourcemap: false,
                         global: true,
                         compress: {screw_ie8: false}, // eslint-disable-line camelcase
                         mangle: {screw_ie8: false}, // eslint-disable-line camelcase
                         output: {screw_ie8: false} // eslint-disable-line camelcase
-                    }, 'uglifyify');
+                    });
                 });
         });
 
@@ -61,7 +61,7 @@ describe('clientBridge', () => {
         it('should transform client scripts using native library', () => {
             return clientBridge.build(null, {calibration: {needsCompatLib: false}})
                 .then(() => {
-                    assert.calledWith(script.transform, sinon.match({
+                    assert.calledWith(script.transform, 'aliasify', sinon.match({
                         aliases: {
                             './lib': {relative: './lib.native.js'}
                         },
@@ -73,7 +73,7 @@ describe('clientBridge', () => {
         it('should transform client scripts using compat library', () => {
             return clientBridge.build(null, {calibration: {needsCompatLib: true}})
                 .then(() => {
-                    assert.calledWith(script.transform, sinon.match({
+                    assert.calledWith(script.transform, 'aliasify', sinon.match({
                         aliases: {
                             './lib': {relative: './lib.compat.js'}
                         },
@@ -85,7 +85,7 @@ describe('clientBridge', () => {
         it('should transform client scripts NOT for deprecated mode', () => {
             return clientBridge.build(null, {supportDeprecated: false})
                 .then(() => {
-                    assert.calledWith(script.transform, sinon.match({
+                    assert.calledWith(script.transform, 'aliasify', sinon.match({
                         aliases: {
                             './ignore-areas': {relative: './ignore-areas.js'}
                         },
@@ -97,7 +97,7 @@ describe('clientBridge', () => {
         it('should transform client scripts for deprecated mode', () => {
             return clientBridge.build(null, {supportDeprecated: true})
                 .then(() => {
-                    assert.calledWith(script.transform, sinon.match({
+                    assert.calledWith(script.transform, 'aliasify', sinon.match({
                         aliases: {
                             './ignore-areas': {relative: './ignore-areas.deprecated.js'}
                         },

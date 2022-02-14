@@ -1,0 +1,14 @@
+{
+    "extends": "@tsconfig/recommended/tsconfig.json",
+    "include": ["**/*"],
+    "exclude": ["lib/browser/client-scripts", "test", "build"],
+    "compilerOptions": {
+      "outDir": "build",
+      "types": ["node"],
+      "allowJs": true,
+      "checkJs": false,
+      "noImplicitReturns": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true
+    }
+  }
