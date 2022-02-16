@@ -1,4 +1,4 @@
 node_modules
-build
+# build
 *.log
-/lib/browser/client-scripts/calibrate.min.js
+# /lib/browser/client-scripts/calibrate.min.js

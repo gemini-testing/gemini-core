@@ -2,7 +2,7 @@
   "name": "gemini-core",
   "version": "6.3.6",
   "description": "Utility which contains common modules for gemini and hermione",
-  "main": "index.js",
+  "main": "build/index.js",
   "bugs": "https://github.com/gemini-testing/gemini-core/issues",
   "scripts": {
     "lint": "eslint .",
@@ -14,6 +14,7 @@
     "test-unit": "mocha test",
     "pretest": "npm run build",
     "test": "run-s lint test-unit",
+    "prepublishOnly": "npm run build",
     "toc": "doctoc README.md"
   },
   "engines": {
@@ -34,12 +35,12 @@
     "bluebird": "^3.4.6",
     "browserify": "^13.3.0",
     "debug": "^2.2.0",
-    "gemini-configparser": "github:gemini-testing/configparser#FEI-17917",
-    "glob-extra": "github:gemini-testing/glob-extra#FEI-24748",
+    "gemini-configparser": "github:gemini-testing/configparser#TS",
+    "glob-extra": "github:gemini-testing/glob-extra#TS",
     "lodash": "^4.17.15",
     "looks-same": "github:gemini-testing/looks-same#FEI-17919",
     "micromatch": "^4.0.2",
-    "png-img": "github:gemini-testing/png-img#FEI-17920",
+    "png-img": "github:gemini-testing/png-img#TS",
     "sizzle": "^2.3.3",
     "temp": "^0.8.3",
     "uglify-js": "^2.8.29",
