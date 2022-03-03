@@ -40,6 +40,86 @@ describe('Rect', () => {
         });
     });
 
+    describe('isRect', () => {
+        it('should return false if argument is not an object', () => {
+            assert.isFalse(Rect.isRect('foo'));
+        });
+
+        it('should return false if argument is null', () => {
+            assert.isFalse(Rect.isRect(null));
+        });
+
+        it('should return false if argument is array', () => {
+            assert.isFalse(Rect.isRect([]));
+        });
+
+        it('should return false if argument has no left property', () => {
+            assert.isFalse(Rect.isRect({
+                top: 1,
+                width: 1,
+                height: 1
+            }));
+        });
+
+        it('should return false if argument has no top property', () => {
+            assert.isFalse(Rect.isRect({
+                left: 1,
+                width: 1,
+                height: 1
+            }));
+        });
+
+        it('should return false if argument has no width property, but has height', () => {
+            assert.isFalse(Rect.isRect({
+                left: 1,
+                top: 1,
+                height: 1
+            }));
+        });
+
+        it('should return false if argument has no height property, but has width', () => {
+            assert.isFalse(Rect.isRect({
+                left: 1,
+                top: 1,
+                width: 1
+            }));
+        });
+
+        it('should return false if argument has no right property, but has bottom', () => {
+            assert.isFalse(Rect.isRect({
+                left: 1,
+                top: 1,
+                bottom: 1
+            }));
+        });
+
+        it('should return false if argument has no bottom property, but has right', () => {
+            assert.isFalse(Rect.isRect({
+                left: 1,
+                top: 1,
+                right: 1
+            }));
+        });
+
+        it('should return true if argument has left, top, width, height properties', () => {
+            assert.isTrue(Rect.isRect({
+                left: 1,
+                top: 1,
+                width: 1,
+                height: 1
+            }));
+        });
+
+        it('should return true if argument has left, top, right, bottom properties', () => {
+            assert.isTrue(Rect.isRect({
+                left: 1,
+                top: 1,
+                right: 1,
+                bottom: 1
+            }));
+        });
+    });
+
     describe('rectInside', () => {
         it('should return true when rect is inside', () => {
             assert.isTrue(rect.rectInside(
