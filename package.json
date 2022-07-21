@@ -13,7 +13,7 @@
     "toc": "doctoc README.md"
   },
   "engines": {
-    "node": ">= 8"
+    "node": ">= 12"
   },
   "license": "MIT",
   "repository": {
@@ -35,7 +35,7 @@
     "lodash": "^4.17.15",
     "looks-same": "^7.3.0",
     "micromatch": "^4.0.2",
-    "png-img": "^3.3.6",
+    "png-img": "^4.0.1",
     "sizzle": "^2.3.3",
     "temp": "^0.8.3",
     "uglify-js": "^2.8.29",
