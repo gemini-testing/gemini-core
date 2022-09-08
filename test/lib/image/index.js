@@ -1,7 +1,7 @@
 'use strict';
 
 const PngImg = require('png-img');
-const utils = require('png-img/utils');
+const utils = require('png-img/dist/utils');
 const proxyquire = require('proxyquire');
 
 const looksSameStub = sinon.stub();
