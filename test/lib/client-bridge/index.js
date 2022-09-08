@@ -44,11 +44,9 @@ describe('clientBridge', () => {
             return clientBridge.build()
                 .then(() => {
                     assert.calledWith(script.transform, {
-                        sourcemap: false,
+                        sourceMap: false,
                         global: true,
-                        compress: {screw_ie8: false}, // eslint-disable-line camelcase
-                        mangle: {screw_ie8: false}, // eslint-disable-line camelcase
-                        output: {screw_ie8: false} // eslint-disable-line camelcase
+                        ie8: true
                     }, 'uglifyify');
                 });
         });
