@@ -39,7 +39,7 @@
     "sizzle": "^2.3.3",
     "temp": "^0.8.3",
     "uglify-js": "^2.8.29",
-    "uglifyify": "^3.0.4",
+    "uglifyify": "^5.0.2",
     "yallist": "^3.0.3"
   },
   "devDependencies": {
