@@ -1,5 +1,9 @@
 # gemini-core
 
+**DEPRECATED**
+
+**Merged into https://github.com/gemini-testing/hermione in https://github.com/gemini-testing/hermione/pull/658**
+
 [![Build Status](https://travis-ci.org/gemini-testing/gemini-core.svg?branch=master)](https://travis-ci.org/gemini-testing/gemini-core)
 
 Utility which contains common modules for [gemini](https://github.com/gemini-testing/gemini) and [hermione](https://github.com/gemini-testing/hermione).
